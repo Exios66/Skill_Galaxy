@@ -26,6 +26,41 @@
       height: 100vh;
     }
     
+    /* Loading Indicator */
+    .loading-indicator {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.9);
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      z-index: 1000;
+      display: none;
+    }
+    
+    .loading-indicator::after {
+      content: 'Updating visualization...';
+      display: block;
+      text-align: center;
+      margin-top: 10px;
+    }
+    
+    /* Error Message */
+    .error-message {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #ff5555;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 4px;
+      display: none;
+      z-index: 1000;
+    }
+    
     /* ---------------------------
        2. Control Panel
        --------------------------- */
@@ -38,7 +73,7 @@
       border-radius: 5px;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 260px;
-      z-index: 10; /* ensure panel floats above the plot */
+      z-index: 10;
     }
     .control-panel h2 {
       font-size: 1.1rem;
@@ -92,6 +127,8 @@
 <body>
 
 <div id="plot"></div>
+<div class="loading-indicator"></div>
+<div class="error-message"></div>
 
 <!-- 3. Control Panel to guide user interactions -->
 <div class="control-panel">
@@ -117,12 +154,68 @@
     </select>
   </div>
   
+  <div class="control-group">
+    <label for="viewPresets">View Presets:</label>
+    <select id="viewPresets">
+      <option value="default">Default View</option>
+      <option value="top">Top View</option>
+      <option value="side">Side View</option>
+      <option value="cluster">Cluster View</option>
+    </select>
+  </div>
+  
+  <div class="control-group">
+    <label for="animationSpeed">Animation Speed:</label>
+    <input type="range" id="animationSpeed" min="100" max="1000" value="500" step="100">
+  </div>
+  
+  <div class="control-group">
+    <label for="labelSize">Label Size:</label>
+    <input type="range" id="labelSize" min="8" max="16" value="12" step="1">
+  </div>
+  
   <button id="resetBtn">Reset Filters</button>
 </div>
 
 <script>
 // ---------------------
-// 1. Prepare the Data
+// 1. Utility Functions
+// ---------------------
+
+function showLoading() {
+  document.querySelector('.loading-indicator').style.display = 'block';
+}
+
+function hideLoading() {
+  document.querySelector('.loading-indicator').style.display = 'none';
+}
+
+function showError(message) {
+  const errorDiv = document.querySelector('.error-message');
+  errorDiv.textContent = message;
+  errorDiv.style.display = 'block';
+  setTimeout(() => {
+    errorDiv.style.display = 'none';
+  }, 3000);
+}
+
+function validateSkillData(skill) {
+  try {
+    if (!skill || typeof skill !== 'object') return false;
+    return typeof skill.X === 'number' && 
+           typeof skill.Y === 'number' && 
+           typeof skill.Size === 'number' &&
+           typeof skill.Group === 'string' &&
+           typeof skill.Label === 'string' &&
+           !isNaN(skill.X) && !isNaN(skill.Y) && !isNaN(skill.Size);
+  } catch (error) {
+    console.error('Validation error:', error);
+    return false;
+  }
+}
+
+// ---------------------
+// 2. Data Management
 // ---------------------
 
 const allSkills = [
@@ -302,7 +395,11 @@ const allSkills = [
     Skill: "Python (Programming Language)", Group: "Programming", Label: "Python",
     X: 0.9, Y: 0.7, Size: 15, ColorCode: "Programming"
   }
-];
+].filter(validateSkillData);
+
+if (allSkills.length === 0) {
+  showError('No valid skills data found');
+}
 
 // --------------------------------------
 // 2. Initialize Filters & UI Elements
@@ -312,6 +409,9 @@ const groupFilterSelect = document.getElementById('groupFilter');
 const colorBySelect = document.getElementById('colorBy');
 const searchSkillInput = document.getElementById('searchSkill');
 const resetBtn = document.getElementById('resetBtn');
+const viewPresetsSelect = document.getElementById('viewPresets');
+const animationSpeedInput = document.getElementById('animationSpeed');
+const labelSizeInput = document.getElementById('labelSize');
 
 // Create a list of unique groups for the dropdown
 const uniqueGroups = [...new Set(allSkills.map(d => d.Group))];
@@ -349,71 +449,253 @@ function colorByGroup(group) {
   return groupColors[group] || "#AAAAAA";
 }
 
-// Build a trace from a dataset
-function makeTrace(dataArray) {
-  return {
-    type: 'scatter3d',
-    mode: 'markers+text',
-    x: dataArray.map(d => d.X),
-    y: dataArray.map(d => d.Y),
-    z: dataArray.map(d => computeZ(d.X, d.Y)),
-    text: dataArray.map(d => d.Label),
-    textposition: 'top center',
-    marker: {
-      size: dataArray.map(d => d.Size),
-      color: dataArray.map(d => colorByGroup(d.ColorCode)),
-      opacity: 0.9,
-    },
-    hovertemplate:
-      '<b>%{text}</b><br>' +
-      'X: %{x:.2f}<br>' +
-      'Y: %{y:.2f}<br>' +
-      'Z: %{z:.2f}<br>' +
-      'Size: %{marker.size}<extra></extra>'
-  };
-}
-
 // --------------------------------------
-// 4. Initial Plotly Layout & Config
+// 4. Enhanced Plotly Layout & Config
 // --------------------------------------
 const layout = {
-  title: 'Comprehensive Skill Galaxy',
-  scene: {
-    xaxis: { title: 'Proficiency' },
-    yaxis: { title: 'Importance' },
-    zaxis: { title: 'Depth of Expertise' },
-    camera: { eye: { x: 1.5, y: 1.5, z: 1.5 } }
+  title: {
+    text: 'Comprehensive Skill Galaxy',
+    font: {
+      family: 'Arial, sans-serif',
+      size: 24,
+      color: '#333'
+    },
+    y: 0.95
   },
-  margin: { l: 0, r: 0, t: 40, b: 0 },
-  showlegend: false,
-  paper_bgcolor: '#f7f7f7'
+  scene: {
+    xaxis: {
+      title: {
+        text: 'Proficiency',
+        font: { size: 14 }
+      },
+      gridcolor: '#e0e0e0',
+      zerolinecolor: '#999',
+      showbackground: true,
+      backgroundcolor: 'rgba(247, 247, 247, 0.95)',
+      showspikes: true,
+      spikesides: true,
+      spikethickness: 1,
+      spikecolor: '#999',
+      gridwidth: 1,
+      nticks: 10,
+      range: [0, 1]
+    },
+    yaxis: {
+      title: {
+        text: 'Importance',
+        font: { size: 14 }
+      },
+      gridcolor: '#e0e0e0',
+      zerolinecolor: '#999',
+      showbackground: true,
+      backgroundcolor: 'rgba(247, 247, 247, 0.95)',
+      showspikes: true,
+      spikesides: true,
+      spikethickness: 1,
+      spikecolor: '#999',
+      gridwidth: 1,
+      nticks: 10,
+      range: [0, 1]
+    },
+    zaxis: {
+      title: {
+        text: 'Depth of Expertise',
+        font: { size: 14 }
+      },
+      gridcolor: '#e0e0e0',
+      zerolinecolor: '#999',
+      showbackground: true,
+      backgroundcolor: 'rgba(247, 247, 247, 0.95)',
+      showspikes: true,
+      spikesides: true,
+      spikethickness: 1,
+      spikecolor: '#999',
+      gridwidth: 1,
+      nticks: 10,
+      range: [0, 1]
+    },
+    camera: {
+      eye: { x: 1.8, y: 1.8, z: 1.8 },
+      up: { x: 0, y: 0, z: 1 },
+      center: { x: 0, y: 0, z: 0 },
+      projection: {
+        type: 'perspective',
+        distance: 2.5,
+        distanceratio: 0.3
+      }
+    },
+    aspectratio: { x: 1.2, y: 1.2, z: 1 },
+    dragmode: 'orbit',
+    hovermode: 'closest',
+    annotations: [],
+    
+    lighting: {
+      ambient: 0.6,
+      diffuse: 0.8,
+      specular: 0.2,
+      roughness: 0.5,
+      fresnel: 0.8
+    }
+  },
+  margin: { l: 0, r: 0, t: 50, b: 0 },
+  showlegend: true,
+  legend: {
+    x: 0,
+    y: 1,
+    bgcolor: 'rgba(255, 255, 255, 0.9)',
+    bordercolor: '#e0e0e0',
+    borderwidth: 1,
+    font: { size: 12 }
+  },
+  paper_bgcolor: '#f7f7f7',
+  plot_bgcolor: '#f7f7f7'
 };
 
 const config = {
   responsive: true,
-  scrollZoom: true
+  scrollZoom: true,
+  displayModeBar: true,
+  modeBarButtonsToAdd: [
+    'hoverclosest',
+    'hovercompare',
+    'togglespikelines',
+    {
+      name: 'Reset View',
+      icon: Plotly.Icons.home,
+      click: function(gd) {
+        Plotly.relayout(gd, {
+          'scene.camera': layout.scene.camera
+        });
+      }
+    }
+  ],
+  modeBarButtonsToRemove: ['toImage'],
+  displaylogo: false
 };
+
+// Build an enhanced trace from a dataset
+function makeTrace(dataArray) {
+  const groups = [...new Set(dataArray.map(d => d.Group))];
+  return groups.map(group => {
+    const groupData = dataArray.filter(d => d.Group === group);
+    return {
+      type: 'scatter3d',
+      mode: 'markers+text',
+      name: group,
+      x: groupData.map(d => d.X),
+      y: groupData.map(d => d.Y),
+      z: groupData.map(d => computeZ(d.X, d.Y)),
+      text: groupData.map(d => d.Label),
+      textposition: 'top center',
+      textfont: {
+        family: 'Arial, sans-serif',
+        size: 12,
+        color: 'rgba(0, 0, 0, 0.7)'
+      },
+      marker: {
+        size: groupData.map(d => d.Size * 2),
+        color: groupData.map(d => colorByGroup(d.ColorCode)),
+        opacity: 0.85,
+        line: {
+          color: 'rgba(255, 255, 255, 0.8)',
+          width: 1.5
+        },
+        symbol: 'circle',
+        sizemode: 'diameter',
+        sizeref: 0.1,
+        sizemin: 4,
+        colorscale: 'Viridis',
+        showscale: true,
+        reversescale: false,
+        
+        gradient: {
+          type: 'radial',
+          color: 'white'
+        }
+      },
+      hovertemplate:
+        '<div style="background: rgba(255,255,255,0.95); padding: 10px; border-radius: 5px;">' +
+        '<b style="font-size: 14px; color: #333;">%{text}</b><br>' +
+        '<span style="color: #666;">Group:</span> ' + group + '<br>' +
+        '<span style="color: #666;">Proficiency:</span> %{x:.2f}<br>' +
+        '<span style="color: #666;">Importance:</span> %{y:.2f}<br>' +
+        '<span style="color: #666;">Expertise:</span> %{z:.2f}<br>' +
+        '<span style="color: #666;">Impact:</span> %{marker.size:.1f}' +
+        '</div><extra></extra>',
+      hoverlabel: {
+        bgcolor: 'rgba(255, 255, 255, 0.95)',
+        bordercolor: '#333',
+        font: { 
+          family: 'Arial, sans-serif',
+          size: 13
+        },
+        align: 'left'
+      }
+    };
+  });
+}
+
+// Enhanced color mapping
+function colorByGroup(group) {
+  const groupColors = {
+    "Soft Skills": "#FF6B6B",     // Warm red
+    "Data Science": "#4ECDC4",    // Teal
+    "Research": "#45B7D1",        // Sky blue
+    "Neuroscience": "#96CEB4",    // Sage green
+    "Engineering": "#FFBE0B",     // Golden yellow
+    "Education": "#4CAF50",       // Green
+    "AI": "#9B5DE5",             // Purple
+    "Programming": "#00BCD4",     // Cyan
+    "Psychology": "#FF85A1"       // Pink
+  };
+  return groupColors[group] || "#78909C"; // Default color
+}
+
+// Enhanced Z-value computation
+function computeZ(x, y) {
+  const base = (Math.pow(x, 1.2) + Math.pow(y, 1.2)) / 2;
+  const variation = Math.sin(x * Math.PI) * Math.cos(y * Math.PI) * 0.1;
+  return Math.max(0, Math.min(1, base + variation));
+}
 
 // --------------------------------------
 // 5. Filter & Re-render the Plot
 // --------------------------------------
 function updatePlot() {
+  showLoading();
   const selectedGroup = groupFilterSelect.value;
   const searchTerm = searchSkillInput.value.toLowerCase();
 
   filteredData = allSkills.filter(d => {
-    // Group filter
     if (selectedGroup !== "All" && d.Group !== selectedGroup) return false;
-    // Text search filter
     if (searchTerm && !d.Skill.toLowerCase().includes(searchTerm)) return false;
     return true;
   });
 
-  currentTrace = makeTrace(filteredData);
+  const traces = makeTrace(filteredData);
 
-  Plotly.newPlot('plot', [currentTrace], layout, config)
+  Plotly.newPlot('plot', traces, layout, config)
     .then(() => {
-      applyColorBy();
+      hideLoading();
+      // Use custom animation duration
+      const duration = window.animationDuration || 500;
+      Plotly.animate('plot', {
+        data: traces,
+        layout: layout
+      }, {
+        transition: {
+          duration: duration,
+          easing: 'cubic-in-out'
+        },
+        frame: {
+          duration: duration
+        }
+      });
+    })
+    .catch(error => {
+      console.error('Plot update error:', error);
+      showError('Error updating visualization');
+      hideLoading();
     });
 }
 
@@ -455,6 +737,79 @@ resetBtn.addEventListener('click', () => {
 // 8. On Page Load: Render the Plot
 // --------------------------------------
 updatePlot();
+
+// View preset configurations
+const viewPresets = {
+  default: {
+    eye: { x: 1.8, y: 1.8, z: 1.8 },
+    center: { x: 0, y: 0, z: 0 }
+  },
+  top: {
+    eye: { x: 0, y: 0, z: 2.5 },
+    center: { x: 0, y: 0, z: 0 }
+  },
+  side: {
+    eye: { x: 2.5, y: 0, z: 0 },
+    center: { x: 0, y: 0, z: 0 }
+  },
+  cluster: {
+    eye: { x: 2, y: 2, z: 2 },
+    center: { x: 0.5, y: 0.5, z: 0.5 }
+  }
+};
+
+// Handle view preset changes
+viewPresetsSelect.addEventListener('change', (e) => {
+  const preset = viewPresets[e.target.value];
+  if (preset) {
+    Plotly.relayout('plot', {
+      'scene.camera.eye': preset.eye,
+      'scene.camera.center': preset.center
+    });
+  }
+});
+
+// Handle animation speed changes
+animationSpeedInput.addEventListener('input', (e) => {
+  const duration = parseInt(e.target.value);
+  // Store for use in updatePlot
+  window.animationDuration = duration;
+});
+
+// Handle label size changes
+labelSizeInput.addEventListener('input', (e) => {
+  const size = parseInt(e.target.value);
+  const update = {
+    'textfont.size': size
+  };
+  Plotly.restyle('plot', update);
+});
+
+// Add CSS for new controls
+const style = document.createElement('style');
+style.textContent = `
+  .control-group input[type="range"] {
+    width: 100%;
+    margin: 8px 0;
+  }
+  
+  .control-panel select,
+  .control-panel input[type="range"] {
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 4px;
+  }
+  
+  .control-panel input[type="range"]::-webkit-slider-thumb {
+    background: #0066cc;
+  }
+  
+  .control-panel input[type="range"]::-moz-range-thumb {
+    background: #0066cc;
+  }
+`;
+document.head.appendChild(style);
 </script>
 </body>
 </html>
