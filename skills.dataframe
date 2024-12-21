@@ -1,0 +1,36 @@
+Skill,Group,Label,X,Y,Size,ColorCode
+Python,Programming,Python,0.95,0.90,15,Programming
+Machine Learning,AI,ML,0.85,0.85,14,AI
+Deep Learning,AI,DL,0.80,0.85,13,AI
+Data Analysis,Data Science,Data Analysis,0.90,0.85,12,Data Science
+Statistical Analysis,Data Science,Stats,0.85,0.80,11,Data Science
+Neural Networks,AI,Neural Nets,0.75,0.80,12,AI
+Natural Language Processing,AI,NLP,0.80,0.75,13,AI
+Computer Vision,AI,CV,0.75,0.75,12,AI
+Data Visualization,Data Science,Data Viz,0.85,0.70,10,Data Science
+SQL,Programming,SQL,0.90,0.65,11,Programming
+JavaScript,Programming,JS,0.85,0.60,10,Programming
+HTML/CSS,Programming,Web Dev,0.80,0.60,9,Programming
+Git,Programming,Git,0.90,0.55,10,Programming
+Docker,Engineering,Docker,0.75,0.70,9,Engineering
+AWS,Engineering,AWS,0.70,0.65,8,Engineering
+Project Management,Soft Skills,Proj Mgmt,0.75,0.60,9,Soft Skills
+Team Leadership,Soft Skills,Leadership,0.70,0.55,8,Soft Skills
+Communication,Soft Skills,Comm,0.85,0.50,10,Soft Skills
+Problem Solving,Soft Skills,Problem Solving,0.90,0.45,11,Soft Skills
+Critical Thinking,Soft Skills,Critical Think,0.85,0.40,10,Soft Skills
+Research Methods,Research,Research,0.80,0.75,11,Research
+Data Collection,Research,Data Collection,0.75,0.70,9,Research
+Experimental Design,Research,Exp Design,0.70,0.75,10,Research
+Scientific Writing,Research,Sci Writing,0.65,0.70,8,Research
+Peer Review,Research,Peer Review,0.60,0.65,7,Research
+Signal Processing,Engineering,Signal Proc,0.75,0.60,9,Engineering
+Image Processing,Engineering,Image Proc,0.70,0.55,8,Engineering
+System Design,Engineering,Sys Design,0.65,0.50,7,Engineering
+Database Design,Engineering,DB Design,0.60,0.45,6,Engineering
+API Development,Programming,API Dev,0.85,0.40,9,Programming
+Agile Methodology,Soft Skills,Agile,0.70,0.45,8,Soft Skills
+Public Speaking,Soft Skills,Speaking,0.65,0.40,7,Soft Skills
+Technical Writing,Research,Tech Writing,0.60,0.35,6,Research
+Code Review,Programming,Code Review,0.55,0.30,5,Programming
+Testing,Engineering,Testing,0.50,0.25,4,Engineering 

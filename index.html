@@ -442,6 +442,113 @@
     .progress-fill {
       background: linear-gradient(90deg, var(--accent-color) 0%, var(--hover-color) 100%);
     }
+
+    /* Enhanced Theme Toggle */
+    .theme-toggle {
+      position: fixed;
+      z-index: 1000;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle button {
+      width: 44px;
+      height: 44px;
+      background: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px var(--panel-shadow);
+      transition: all 0.3s ease;
+      padding: 0;
+    }
+
+    .theme-toggle button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px var(--panel-shadow);
+    }
+
+    .theme-toggle button:active {
+      transform: scale(0.95);
+    }
+
+    .theme-toggle svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--text-color);
+      transition: all 0.3s ease;
+    }
+
+    /* Enhanced Visualization Mode Selector */
+    #visualizationMode {
+      appearance: none;
+      background: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 8px;
+      padding: 8px 32px 8px 12px;
+      font-size: 14px;
+      color: var(--text-color);
+      cursor: pointer;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 8px center;
+      background-size: 16px;
+    }
+
+    #visualizationMode:hover {
+      border-color: var(--accent-color);
+    }
+
+    #visualizationMode:focus {
+      outline: none;
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.2);
+    }
+
+    /* Mode-specific styles */
+    [data-visualization-mode="galaxy"] .plot-container {
+      height: 100vh;
+    }
+
+    [data-visualization-mode="sunburst"] .plot-container {
+      height: auto;
+      min-height: 800px;
+    }
+
+    [data-visualization-mode="network"] .plot-container,
+    [data-visualization-mode="treemap"] .plot-container,
+    [data-visualization-mode="radar"] .plot-container,
+    [data-visualization-mode="timeline"] .plot-container,
+    [data-visualization-mode="matrix"] .plot-container {
+      height: 80vh;
+    }
+
+    /* Dark mode specific adjustments */
+    [data-theme="dark"] #visualizationMode {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .theme-toggle {
+        top: auto !important;
+        bottom: 20px;
+        left: 20px !important;
+        right: auto !important;
+      }
+
+      .theme-toggle button {
+        width: 40px;
+        height: 40px;
+      }
+
+      #visualizationMode {
+        font-size: 13px;
+        padding: 6px 28px 6px 10px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -563,9 +670,20 @@
       const errorDiv = document.querySelector('.error-message');
       errorDiv.textContent = message;
       errorDiv.style.display = 'block';
+      
+      // Add retry button for loading errors
+      if (message.includes('loading')) {
+        const retryButton = document.createElement('button');
+        retryButton.textContent = 'Retry';
+        retryButton.onclick = loadSkillsData;
+        retryButton.style.marginLeft = '10px';
+        errorDiv.appendChild(retryButton);
+      }
+      
       setTimeout(() => {
         errorDiv.style.display = 'none';
-      }, 3000);
+        errorDiv.innerHTML = ''; // Clear any added buttons
+      }, 5000);
     }
     
     function validateSkillData(skill) {
@@ -587,24 +705,80 @@
     // 2. Data Management
     // ---------------------
     
-    const allSkills = [
-      // Your existing skills data...
-      {
-        Skill: "Negotiation", Group: "Soft Skills", Label: "Negotiation",
-        X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
-      },
-      // (Additional skill objects)
-      {
-        Skill: "Python (Programming Language)", Group: "Programming", Label: "Python",
-        X: 0.9, Y: 0.7, Size: 15, ColorCode: "Programming"
-      }
-    ].filter(validateSkillData);
+    let allSkills = [];
     
-    if (allSkills.length === 0) {
-      showError('No valid skills data found');
+    // Function to load and parse CSV
+    async function loadSkillsData() {
+      try {
+        showLoading();
+        const response = await fetch('skills.csv');
+        const csvText = await response.text();
+        
+        // Parse CSV
+        const lines = csvText.split('\n');
+        const headers = lines[0].split(',');
+        
+        allSkills = lines.slice(1).map(line => {
+          const values = line.split(',');
+          return {
+            Skill: values[0],
+            Group: values[1],
+            Label: values[2],
+            X: parseFloat(values[3]),
+            Y: parseFloat(values[4]),
+            Size: parseInt(values[5]),
+            ColorCode: values[6]
+          };
+        }).filter(validateSkillData);
+
+        if (allSkills.length === 0) {
+          showError('No valid skills data found in CSV');
+          return;
+        }
+
+        // Initialize the visualization after loading data
+        initializeVisualization();
+        hideLoading();
+      } catch (error) {
+        console.error('Error loading skills data:', error);
+        showError('Error loading skills data');
+        hideLoading();
+      }
     }
     
-    // --------------------------------------
+    // Function to initialize visualization
+    function initializeVisualization() {
+      // Populate group filter dropdown
+      const uniqueGroups = [...new Set(allSkills.map(d => d.Group))];
+      groupFilterSelect.innerHTML = '<option value="All" selected>All Groups</option>';
+      uniqueGroups.forEach(group => {
+        const option = document.createElement('option');
+        option.value = group;
+        option.textContent = group;
+        groupFilterSelect.appendChild(option);
+      });
+
+      // Initialize managers
+      const relationshipManager = new SkillRelationshipManager(allSkills);
+      const detailsPanel = new SkillDetailsPanelManager(
+        document.querySelector('.skill-details-panel'),
+        relationshipManager
+      );
+      const connectionRenderer = new SkillConnectionRenderer(
+        document.getElementById('connectionCanvas'),
+        allSkills,
+        relationshipManager
+      );
+      const visualizationManager = new VisualizationManager(
+        document.getElementById('plot'),
+        allSkills
+      );
+
+      // Initial plot
+      updatePlot();
+    }
+    
+    // ---------------------
     // 3. Initialize Filters & UI Elements
     // --------------------------------------
     
@@ -615,22 +789,6 @@
     const viewPresetsSelect = document.getElementById('viewPresets');
     const animationSpeedInput = document.getElementById('animationSpeed');
     const labelSizeInput = document.getElementById('labelSize');
-    
-    // Populate group filter dropdown
-    const uniqueGroups = [...new Set(allSkills.map(d => d.Group))];
-    uniqueGroups.forEach(group => {
-      const option = document.createElement('option');
-      option.value = group;
-      option.textContent = group;
-      groupFilterSelect.appendChild(option);
-    });
-    
-    // Compute Z-value for 3D visualization
-    function computeZ(x, y) {
-      const base = (Math.pow(x, 1.2) + Math.pow(y, 1.2)) / 2;
-      const variation = Math.sin(x * Math.PI) * Math.cos(y * Math.PI) * 0.1;
-      return Math.max(0, Math.min(1, base + variation));
-    }
     
     // ---------------------
     // 4. Color Mappings & Utility Functions
@@ -929,7 +1087,19 @@
     // 10. On Page Load: Render the Plot
     // ---------------------
     document.addEventListener('DOMContentLoaded', () => {
-      updatePlot();
+      loadSkillsData();
+      
+      // Initialize viewport manager
+      const viewportManager = new ViewportManager();
+      
+      // Update theme toggle position on visualization mode change
+      document.getElementById('visualizationMode').addEventListener('change', (e) => {
+        document.body.setAttribute('data-visualization-mode', e.target.value);
+        viewportManager.updateViewportLayout();
+      });
+      
+      // Set initial visualization mode
+      document.body.setAttribute('data-visualization-mode', 'galaxy');
     });
     
     // View preset configurations
@@ -1502,6 +1672,64 @@
         allSkills
       );
     });
+
+    // Add to the utility functions section
+    function validateCSVData(data) {
+      const requiredHeaders = ['Skill', 'Group', 'Label', 'X', 'Y', 'Size', 'ColorCode'];
+      const headers = Object.keys(data);
+      
+      return requiredHeaders.every(header => headers.includes(header)) &&
+        typeof data.X === 'number' && !isNaN(data.X) &&
+        typeof data.Y === 'number' && !isNaN(data.Y) &&
+        typeof data.Size === 'number' && !isNaN(data.Size) &&
+        data.X >= 0 && data.X <= 1 &&
+        data.Y >= 0 && data.Y <= 1 &&
+        data.Size > 0;
+    }
+
+    // Add to the existing script section, after the ThemeManager class
+    class ViewportManager {
+      constructor() {
+        this.plot = document.getElementById('plot');
+        this.visualizationMode = document.getElementById('visualizationMode');
+        this.themeToggle = document.querySelector('.theme-toggle');
+        this.setupEventListeners();
+        this.updateViewportLayout();
+      }
+
+      setupEventListeners() {
+        this.visualizationMode.addEventListener('change', () => this.updateViewportLayout());
+        window.addEventListener('resize', () => this.updateViewportLayout());
+      }
+
+      updateViewportLayout() {
+        const mode = this.visualizationMode.value;
+        
+        // Adjust theme toggle position based on visualization mode
+        if (mode === 'galaxy' || mode === 'network') {
+          this.themeToggle.style.top = '20px';
+          this.themeToggle.style.left = '20px';
+        } else {
+          this.themeToggle.style.top = '20px';
+          this.themeToggle.style.right = '20px';
+          this.themeToggle.style.left = 'auto';
+        }
+
+        // Update plot container styles based on visualization mode
+        switch (mode) {
+          case 'galaxy':
+            this.plot.style.height = '100vh';
+            break;
+          case 'sunburst':
+            this.plot.style.height = 'auto';
+            this.plot.style.minHeight = '800px';
+            break;
+          default:
+            this.plot.style.height = '80vh';
+            break;
+        }
+      }
+    }
   </script>
 </body>
 </html>
