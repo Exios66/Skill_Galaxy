@@ -6,47 +6,71 @@
   <title>Comprehensive Skill Galaxy</title>
   <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
-    /* ---------------------------
-       1. General Styling
-       --------------------------- */
-    body {
+    /* General Styling */
+    body, html {
+      height: 100%;
+      width: 100%;
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f7f7f7;
       color: #333;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
+
     h1, h2, h3 {
       margin: 0;
       padding: 0;
     }
-    
+
     /* Plot Container */
     #plot {
-      width: 100vw;
-      height: 100vh;
+      flex: 1 1 auto;
+      width: 100%;
+      height: 100%;
     }
-    
-    /* Loading Indicator */
+
+    /* Loading Indicator with Spinner */
     .loading-indicator {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       z-index: 1000;
       display: none;
+      text-align: center;
     }
-    
+
+    .loading-indicator::before {
+      content: '';
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      border: 4px solid #ccc;
+      border-top-color: #0066cc;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+
     .loading-indicator::after {
       content: 'Updating visualization...';
-      display: block;
-      text-align: center;
-      margin-top: 10px;
+      display: inline-block;
+      vertical-align: middle;
+      font-size: 1rem;
+      color: #333;
     }
-    
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
     /* Error Message */
     .error-message {
       position: fixed;
@@ -60,756 +84,983 @@
       display: none;
       z-index: 1000;
     }
-    
-    /* ---------------------------
-       2. Control Panel
-       --------------------------- */
+
+    /* Control Panel */
     .control-panel {
       position: absolute;
       top: 10px;
       right: 10px;
       background: rgba(255,255,255,0.95);
-      padding: 10px 15px;
-      border-radius: 5px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 260px;
+      padding: 15px 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.2);
+      max-width: 300px;
       z-index: 10;
+      overflow-y: auto;
     }
+
     .control-panel h2 {
-      font-size: 1.1rem;
+      font-size: 1.2em;
       margin-bottom: 10px;
     }
+
     .control-panel .control-group {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
+
     .control-panel label {
       display: block;
       margin-top: 8px;
       font-weight: bold;
-      font-size: 0.9rem;
+      font-size: 1em;
     }
+
     .control-panel select,
     .control-panel input {
       width: 100%;
-      margin: 4px 0;
-      padding: 5px;
-      font-size: 0.85rem;
+      margin: 5px 0;
+      padding: 8px;
+      font-size: 1em;
       border: 1px solid #ccc;
       border-radius: 4px;
+      background: white;
     }
+
     .control-panel button {
-      margin-top: 5px;
+      margin-top: 10px;
       width: 100%;
-      padding: 7px;
+      padding: 10px;
       background: #0066cc;
       color: #fff;
       border: none;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 1em;
       cursor: pointer;
       transition: background 0.2s ease-in-out;
     }
+
     .control-panel button:hover {
       background: #004999;
     }
 
-    /* Responsive for smaller screens */
-    @media (max-width: 600px) {
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
       .control-panel {
         top: auto;
         bottom: 10px;
-        right: 10px;
+        right: 50%;
+        transform: translateX(50%);
         max-width: 90%;
       }
+
+      #plot {
+        height: calc(100vh - 120px);
+      }
+
+      .control-panel h2 {
+        font-size: 1rem;
+      }
+
+      .control-panel label {
+        font-size: 0.9rem;
+      }
+
+      .control-panel select,
+      .control-panel input,
+      .control-panel button {
+        font-size: 0.9rem;
+        padding: 6px;
+      }
+    }
+
+    /* Touch-Friendly Controls */
+    .control-panel button,
+    .control-panel select,
+    .control-panel input {
+      touch-action: manipulation;
+    }
+
+    .control-panel button {
+      padding: 10px;
+    }
+
+    /* Pre-render Placeholder */
+    #pre-render {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f7f7f7;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      font-size: 1.2rem;
+      color: #666;
+    }
+
+    /* Skill Details Panel */
+    .skill-details-panel {
+      position: absolute;
+      left: 10px;
+      top: 10px;
+      width: 300px;
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 8px;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
+      transform: translateX(-120%);
+      transition: transform 0.3s ease-in-out;
+      z-index: 100;
+    }
+
+    .skill-details-panel.active {
+      transform: translateX(0);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5em;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .panel-content {
+      padding: 15px;
+    }
+
+    .skill-metrics {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+
+    .metric-card {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 6px;
+      text-align: center;
+    }
+
+    .related-skills {
+      margin-bottom: 15px;
+    }
+
+    .skill-tag {
+      display: inline-block;
+      padding: 4px 8px;
+      margin: 2px;
+      background: #e9ecef;
+      border-radius: 4px;
+      font-size: 0.9em;
+    }
+
+    /* Connection Canvas */
+    #connectionCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* Skill Node Enhancements */
+    .skill-node {
+      position: relative;
+    }
+
+    .skill-node::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 100%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%);
+      pointer-events: none;
+    }
+
+    /* Skill Progress Indicator */
+    .skill-progression {
+      margin-top: 15px;
+    }
+
+    .progress-bar {
+      height: 8px;
+      background: #eee;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
+      transition: width 0.3s ease;
     }
   </style>
 </head>
 <body>
 
-<div id="plot"></div>
-<div class="loading-indicator"></div>
-<div class="error-message"></div>
+  <!-- Pre-render Placeholder -->
+  <div id="pre-render">Loading Skill Galaxy...</div>
 
-<!-- 3. Control Panel to guide user interactions -->
-<div class="control-panel">
-  <h2>Skill Galaxy Controls</h2>
-  
-  <div class="control-group">
-    <label for="groupFilter">Filter by Group:</label>
-    <select id="groupFilter">
-      <option value="All" selected>All Groups</option>
-    </select>
-  </div>
-  
-  <div class="control-group">
-    <label for="searchSkill">Filter by Skill:</label>
-    <input type="text" id="searchSkill" placeholder="Type skill name..."/>
-  </div>
-  
-  <div class="control-group">
-    <label for="colorBy">Color Options:</label>
-    <select id="colorBy">
-      <option value="Group" selected>Color by Group</option>
-      <option value="Size">Color by Size</option>
-    </select>
-  </div>
-  
-  <div class="control-group">
-    <label for="viewPresets">View Presets:</label>
-    <select id="viewPresets">
-      <option value="default">Default View</option>
-      <option value="top">Top View</option>
-      <option value="side">Side View</option>
-      <option value="cluster">Cluster View</option>
-    </select>
-  </div>
-  
-  <div class="control-group">
-    <label for="animationSpeed">Animation Speed:</label>
-    <input type="range" id="animationSpeed" min="100" max="1000" value="500" step="100">
-  </div>
-  
-  <div class="control-group">
-    <label for="labelSize">Label Size:</label>
-    <input type="range" id="labelSize" min="8" max="16" value="12" step="1">
-  </div>
-  
-  <button id="resetBtn">Reset Filters</button>
-</div>
+  <!-- Plot Container -->
+  <div id="plot"></div>
 
-<script>
-// ---------------------
-// 1. Utility Functions
-// ---------------------
+  <!-- Loading Indicator -->
+  <div class="loading-indicator"></div>
 
-function showLoading() {
-  document.querySelector('.loading-indicator').style.display = 'block';
-}
+  <!-- Error Message -->
+  <div class="error-message"></div>
 
-function hideLoading() {
-  document.querySelector('.loading-indicator').style.display = 'none';
-}
-
-function showError(message) {
-  const errorDiv = document.querySelector('.error-message');
-  errorDiv.textContent = message;
-  errorDiv.style.display = 'block';
-  setTimeout(() => {
-    errorDiv.style.display = 'none';
-  }, 3000);
-}
-
-function validateSkillData(skill) {
-  try {
-    if (!skill || typeof skill !== 'object') return false;
-    return typeof skill.X === 'number' && 
-           typeof skill.Y === 'number' && 
-           typeof skill.Size === 'number' &&
-           typeof skill.Group === 'string' &&
-           typeof skill.Label === 'string' &&
-           !isNaN(skill.X) && !isNaN(skill.Y) && !isNaN(skill.Size);
-  } catch (error) {
-    console.error('Validation error:', error);
-    return false;
-  }
-}
-
-// ---------------------
-// 2. Data Management
-// ---------------------
-
-const allSkills = [
-  {
-    Skill: "Negotiation", Group: "Soft Skills", Label: "Negotiation",
-    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Conflict Resolution", Group: "Soft Skills", Label: "Conflict Resol.",
-    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Emotional Intelligence", Group: "Soft Skills", Label: "Emotional Intell.",
-    X: 0.65, Y: 0.6, Size: 9, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Interpersonal Skills", Group: "Soft Skills", Label: "Interpersonal",
-    X: 0.7, Y: 0.65, Size: 10, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Decision Making", Group: "Soft Skills", Label: "Decision Making",
-    X: 0.7, Y: 0.65, Size: 10, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Strategic Planning", Group: "Soft Skills", Label: "Strategic Plan.",
-    X: 0.65, Y: 0.6, Size: 9, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Organizational Skills", Group: "Soft Skills", Label: "Org. Skills",
-    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Leadership", Group: "Soft Skills", Label: "Leadership",
-    X: 0.7, Y: 0.7, Size: 10, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Creativity", Group: "Soft Skills", Label: "Creativity",
-    X: 0.65, Y: 0.65, Size: 9, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Attention to Detail", Group: "Soft Skills", Label: "Attention Detail",
-    X: 0.6, Y: 0.6, Size: 8, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Adaptability", Group: "Soft Skills", Label: "Adaptability",
-    X: 0.55, Y: 0.5, Size: 7, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Collaboration", Group: "Soft Skills", Label: "Collaboration",
-    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Problem Solving", Group: "Soft Skills", Label: "Problem Solving",
-    X: 0.65, Y: 0.65, Size: 9, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Critical Thinking", Group: "Soft Skills", Label: "Critical Thinking",
-    X: 0.6, Y: 0.6, Size: 8, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Public Speaking", Group: "Soft Skills", Label: "Public Speaking",
-    X: 0.55, Y: 0.5, Size: 7, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Teaching", Group: "Education", Label: "Teaching",
-    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Education"
-  },
-  {
-    Skill: "Regression Analysis", Group: "Data Science", Label: "Regression",
-    X: 0.7, Y: 0.73, Size: 10, ColorCode: "Data Science"
-  },
-  {
-    Skill: "Hypothesis Testing", Group: "Research", Label: "Hypothesis Test",
-    X: 0.65, Y: 0.7, Size: 9, ColorCode: "Research"
-  },
-  {
-    Skill: "Bayesian Statistics", Group: "Data Science", Label: "Bayesian Stats",
-    X: 0.7, Y: 0.75, Size: 10, ColorCode: "Data Science"
-  },
-  {
-    Skill: "Cognitive Neuroscience", Group: "Neuroscience", Label: "Cog. Neurosci.",
-    X: 0.8, Y: 0.9, Size: 13, ColorCode: "Neuroscience"
-  },
-  {
-    Skill: "Signal Processing", Group: "Engineering", Label: "Signal Proc.",
-    X: 0.75, Y: 0.8, Size: 11, ColorCode: "Engineering"
-  },
-  {
-    Skill: "Time Series Analysis", Group: "Data Science", Label: "Time Series",
-    X: 0.68, Y: 0.7, Size: 9, ColorCode: "Data Science"
-  },
-  {
-    Skill: "Project Management", Group: "Soft Skills", Label: "Project Mgmt",
-    X: 0.6, Y: 0.5, Size: 8, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Deep Learning", Group: "AI", Label: "Deep Learning",
-    X: 0.85, Y: 0.8, Size: 14, ColorCode: "AI"
-  },
-  {
-    Skill: "Data Visualization", Group: "Data Science", Label: "Data Viz",
-    X: 0.7, Y: 0.72, Size: 10, ColorCode: "Data Science"
-  },
-  {
-    Skill: "Scientific Writing", Group: "Research", Label: "Sci. Writing",
-    X: 0.65, Y: 0.7, Size: 9, ColorCode: "Research"
-  },
-  {
-    Skill: "Neuroimaging", Group: "Neuroscience", Label: "Neuroimaging",
-    X: 0.78, Y: 0.88, Size: 12, ColorCode: "Neuroscience"
-  },
-  {
-    Skill: "Experimental Design", Group: "Research", Label: "Exp. Design",
-    X: 0.72, Y: 0.77, Size: 10, ColorCode: "Research"
-  },
-  {
-    Skill: "Statistical Analysis", Group: "Data Science", Label: "Stat. Analysis",
-    X: 0.75, Y: 0.78, Size: 11, ColorCode: "Data Science"
-  },
-  {
-    Skill: "Natural Language Processing", Group: "AI", Label: "NLP",
-    X: 0.88, Y: 0.82, Size: 13, ColorCode: "AI"
-  },
-  {
-    Skill: "Multilingual Communication", Group: "Soft Skills", Label: "Multilingual",
-    X: 0.6, Y: 0.5, Size: 5, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Team Leadership", Group: "Soft Skills", Label: "Team Leadership",
-    X: 0.55, Y: 0.35, Size: 6, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "Communication Skills", Group: "Soft Skills", Label: "Comm. Skills",
-    X: 0.7, Y: 0.4, Size: 6, ColorCode: "Soft Skills"
-  },
-  {
-    Skill: "K-means Clustering", Group: "Data Science", Label: "K-means",
-    X: 0.65, Y: 0.65, Size: 7, ColorCode: "Data Science"
-  },
-  {
-    Skill: "TF-IDF Techniques", Group: "Data Science", Label: "TF-IDF",
-    X: 0.6, Y: 0.55, Size: 7, ColorCode: "Data Science"
-  },
-  {
-    Skill: "Survey Design", Group: "Research", Label: "Survey Design",
-    X: 0.85, Y: 0.65, Size: 8, ColorCode: "Research"
-  },
-  {
-    Skill: "R (Programming Language)", Group: "Programming", Label: "R",
-    X: 0.8, Y: 0.7, Size: 9, ColorCode: "Programming"
-  },
-  {
-    Skill: "MATLAB", Group: "Programming", Label: "MATLAB",
-    X: 0.7, Y: 0.7, Size: 9, ColorCode: "Programming"
-  },
-  {
-    Skill: "Research Methodology", Group: "Research", Label: "Research Methods",
-    X: 0.75, Y: 0.8, Size: 11, ColorCode: "Research"
-  },
-  {
-    Skill: "EEG Data Analysis", Group: "Neuroscience", Label: "EEG Analysis",
-    X: 0.9, Y: 0.9, Size: 12, ColorCode: "Neuroscience"
-  },
-  {
-    Skill: "Machine Learning", Group: "AI", Label: "ML",
-    X: 0.7, Y: 0.75, Size: 14, ColorCode: "AI"
-  },
-  {
-    Skill: "Data Analysis", Group: "Data Science", Label: "Data Analysis",
-    X: 0.8, Y: 0.75, Size: 10, ColorCode: "Data Science"
-  },
-  {
-    Skill: "Psychological Research", Group: "Psychology", Label: "Psych. Research",
-    X: 0.85, Y: 0.9, Size: 12, ColorCode: "Psychology"
-  },
-  {
-    Skill: "Python (Programming Language)", Group: "Programming", Label: "Python",
-    X: 0.9, Y: 0.7, Size: 15, ColorCode: "Programming"
-  }
-].filter(validateSkillData);
-
-if (allSkills.length === 0) {
-  showError('No valid skills data found');
-}
-
-// --------------------------------------
-// 2. Initialize Filters & UI Elements
-// --------------------------------------
-
-const groupFilterSelect = document.getElementById('groupFilter');
-const colorBySelect = document.getElementById('colorBy');
-const searchSkillInput = document.getElementById('searchSkill');
-const resetBtn = document.getElementById('resetBtn');
-const viewPresetsSelect = document.getElementById('viewPresets');
-const animationSpeedInput = document.getElementById('animationSpeed');
-const labelSizeInput = document.getElementById('labelSize');
-
-// Create a list of unique groups for the dropdown
-const uniqueGroups = [...new Set(allSkills.map(d => d.Group))];
-uniqueGroups.forEach(group => {
-  const option = document.createElement('option');
-  option.value = group;
-  option.textContent = group;
-  groupFilterSelect.appendChild(option);
-});
-
-// Function to compute a simple 'Z' value for 3D, combining X & Y
-function computeZ(x, y) {
-  return (x + y) / 2; // or any custom formula
-}
-
-// Master arrays for filtered data & plotly trace
-let filteredData = [];
-let currentTrace = null;
-
-// --------------------------------------
-// 3. Color Mappings & Utility Functions
-// --------------------------------------
-function colorByGroup(group) {
-  const groupColors = {
-    "Soft Skills": "#FF9999",
-    "Data Science": "#FFB366",
-    "Research": "#99CCFF",
-    "Neuroscience": "#FF99FF",
-    "Engineering": "#FFCC99",
-    "Education": "#88CC88",
-    "AI": "#FF66FF",
-    "Programming": "#CCFF99",
-    "Psychology": "#FFCCCC"
-  };
-  return groupColors[group] || "#AAAAAA";
-}
-
-// --------------------------------------
-// 4. Enhanced Plotly Layout & Config
-// --------------------------------------
-const layout = {
-  title: {
-    text: 'Comprehensive Skill Galaxy',
-    font: {
-      family: 'Arial, sans-serif',
-      size: 24,
-      color: '#333'
-    },
-    y: 0.95
-  },
-  scene: {
-    xaxis: {
-      title: {
-        text: 'Proficiency',
-        font: { size: 14 }
-      },
-      gridcolor: '#e0e0e0',
-      zerolinecolor: '#999',
-      showbackground: true,
-      backgroundcolor: 'rgba(247, 247, 247, 0.95)',
-      showspikes: true,
-      spikesides: true,
-      spikethickness: 1,
-      spikecolor: '#999',
-      gridwidth: 1,
-      nticks: 10,
-      range: [0, 1]
-    },
-    yaxis: {
-      title: {
-        text: 'Importance',
-        font: { size: 14 }
-      },
-      gridcolor: '#e0e0e0',
-      zerolinecolor: '#999',
-      showbackground: true,
-      backgroundcolor: 'rgba(247, 247, 247, 0.95)',
-      showspikes: true,
-      spikesides: true,
-      spikethickness: 1,
-      spikecolor: '#999',
-      gridwidth: 1,
-      nticks: 10,
-      range: [0, 1]
-    },
-    zaxis: {
-      title: {
-        text: 'Depth of Expertise',
-        font: { size: 14 }
-      },
-      gridcolor: '#e0e0e0',
-      zerolinecolor: '#999',
-      showbackground: true,
-      backgroundcolor: 'rgba(247, 247, 247, 0.95)',
-      showspikes: true,
-      spikesides: true,
-      spikethickness: 1,
-      spikecolor: '#999',
-      gridwidth: 1,
-      nticks: 10,
-      range: [0, 1]
-    },
-    camera: {
-      eye: { x: 1.8, y: 1.8, z: 1.8 },
-      up: { x: 0, y: 0, z: 1 },
-      center: { x: 0, y: 0, z: 0 },
-      projection: {
-        type: 'perspective',
-        distance: 2.5,
-        distanceratio: 0.3
-      }
-    },
-    aspectratio: { x: 1.2, y: 1.2, z: 1 },
-    dragmode: 'orbit',
-    hovermode: 'closest',
-    annotations: [],
+  <!-- Control Panel -->
+  <div class="control-panel">
+    <h2>Skill Galaxy Controls</h2>
     
-    lighting: {
-      ambient: 0.6,
-      diffuse: 0.8,
-      specular: 0.2,
-      roughness: 0.5,
-      fresnel: 0.8
-    }
-  },
-  margin: { l: 0, r: 0, t: 50, b: 0 },
-  showlegend: true,
-  legend: {
-    x: 0,
-    y: 1,
-    bgcolor: 'rgba(255, 255, 255, 0.9)',
-    bordercolor: '#e0e0e0',
-    borderwidth: 1,
-    font: { size: 12 }
-  },
-  paper_bgcolor: '#f7f7f7',
-  plot_bgcolor: '#f7f7f7'
-};
+    <div class="control-group">
+      <label for="groupFilter">Filter by Group:</label>
+      <select id="groupFilter">
+        <option value="All" selected>All Groups</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="searchSkill">Filter by Skill:</label>
+      <input type="text" id="searchSkill" placeholder="Type skill name..."/>
+    </div>
+    
+    <div class="control-group">
+      <label for="colorBy">Color Options:</label>
+      <select id="colorBy">
+        <option value="Group" selected>Color by Group</option>
+        <option value="Size">Color by Size</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="viewPresets">View Presets:</label>
+      <select id="viewPresets">
+        <option value="default">Default View</option>
+        <option value="top">Top View</option>
+        <option value="side">Side View</option>
+        <option value="cluster">Cluster View</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
+      <label for="animationSpeed">Animation Speed:</label>
+      <input type="range" id="animationSpeed" min="100" max="1000" value="500" step="100">
+    </div>
+    
+    <div class="control-group">
+      <label for="labelSize">Label Size:</label>
+      <input type="range" id="labelSize" min="8" max="16" value="12" step="1">
+    </div>
+    
+    <button id="resetBtn">Reset Filters</button>
+  </div>
+  
+  <!-- Add after the control panel div -->
+  <div class="skill-details-panel">
+    <div class="panel-header">
+      <h3>Skill Details</h3>
+      <button class="close-btn">&times;</button>
+    </div>
+    <div class="panel-content">
+      <div class="skill-metrics"></div>
+      <div class="related-skills"></div>
+      <div class="skill-progression"></div>
+    </div>
+  </div>
 
-const config = {
-  responsive: true,
-  scrollZoom: true,
-  displayModeBar: true,
-  modeBarButtonsToAdd: [
-    'hoverclosest',
-    'hovercompare',
-    'togglespikelines',
-    {
-      name: 'Reset View',
-      icon: Plotly.Icons.home,
-      click: function(gd) {
-        Plotly.relayout(gd, {
-          'scene.camera': layout.scene.camera
-        });
+  <!-- Add connection canvas for skill relationships -->
+  <canvas id="connectionCanvas"></canvas>
+  
+  <script>
+    // ---------------------
+    // 1. Utility Functions
+    // ---------------------
+    
+    function showLoading() {
+      document.querySelector('.loading-indicator').style.display = 'block';
+    }
+    
+    function hideLoading() {
+      document.querySelector('.loading-indicator').style.display = 'none';
+    }
+    
+    function showError(message) {
+      const errorDiv = document.querySelector('.error-message');
+      errorDiv.textContent = message;
+      errorDiv.style.display = 'block';
+      setTimeout(() => {
+        errorDiv.style.display = 'none';
+      }, 3000);
+    }
+    
+    function validateSkillData(skill) {
+      try {
+        if (!skill || typeof skill !== 'object') return false;
+        return typeof skill.X === 'number' && 
+               typeof skill.Y === 'number' && 
+               typeof skill.Size === 'number' &&
+               typeof skill.Group === 'string' &&
+               typeof skill.Label === 'string' &&
+               !isNaN(skill.X) && !isNaN(skill.Y) && !isNaN(skill.Size);
+      } catch (error) {
+        console.error('Validation error:', error);
+        return false;
       }
     }
-  ],
-  modeBarButtonsToRemove: ['toImage'],
-  displaylogo: false
-};
-
-// Build an enhanced trace from a dataset
-function makeTrace(dataArray) {
-  const groups = [...new Set(dataArray.map(d => d.Group))];
-  return groups.map(group => {
-    const groupData = dataArray.filter(d => d.Group === group);
-    return {
-      type: 'scatter3d',
-      mode: 'markers+text',
-      name: group,
-      x: groupData.map(d => d.X),
-      y: groupData.map(d => d.Y),
-      z: groupData.map(d => computeZ(d.X, d.Y)),
-      text: groupData.map(d => d.Label),
-      textposition: 'top center',
-      textfont: {
-        family: 'Arial, sans-serif',
-        size: 12,
-        color: 'rgba(0, 0, 0, 0.7)'
+    
+    // ---------------------
+    // 2. Data Management
+    // ---------------------
+    
+    const allSkills = [
+      // Your existing skills data...
+      {
+        Skill: "Negotiation", Group: "Soft Skills", Label: "Negotiation",
+        X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
       },
-      marker: {
-        size: groupData.map(d => d.Size * 2),
-        color: groupData.map(d => colorByGroup(d.ColorCode)),
-        opacity: 0.85,
-        line: {
-          color: 'rgba(255, 255, 255, 0.8)',
-          width: 1.5
+      // (Additional skill objects)
+      {
+        Skill: "Python (Programming Language)", Group: "Programming", Label: "Python",
+        X: 0.9, Y: 0.7, Size: 15, ColorCode: "Programming"
+      }
+    ].filter(validateSkillData);
+    
+    if (allSkills.length === 0) {
+      showError('No valid skills data found');
+    }
+    
+    // --------------------------------------
+    // 3. Initialize Filters & UI Elements
+    // --------------------------------------
+    
+    const groupFilterSelect = document.getElementById('groupFilter');
+    const colorBySelect = document.getElementById('colorBy');
+    const searchSkillInput = document.getElementById('searchSkill');
+    const resetBtn = document.getElementById('resetBtn');
+    const viewPresetsSelect = document.getElementById('viewPresets');
+    const animationSpeedInput = document.getElementById('animationSpeed');
+    const labelSizeInput = document.getElementById('labelSize');
+    
+    // Populate group filter dropdown
+    const uniqueGroups = [...new Set(allSkills.map(d => d.Group))];
+    uniqueGroups.forEach(group => {
+      const option = document.createElement('option');
+      option.value = group;
+      option.textContent = group;
+      groupFilterSelect.appendChild(option);
+    });
+    
+    // Compute Z-value for 3D visualization
+    function computeZ(x, y) {
+      const base = (Math.pow(x, 1.2) + Math.pow(y, 1.2)) / 2;
+      const variation = Math.sin(x * Math.PI) * Math.cos(y * Math.PI) * 0.1;
+      return Math.max(0, Math.min(1, base + variation));
+    }
+    
+    // ---------------------
+    // 4. Color Mappings & Utility Functions
+    // ---------------------
+    function colorByGroup(group) {
+      const groupColors = {
+        "Soft Skills": "#FF6B6B",     // Warm red
+        "Data Science": "#4ECDC4",    // Teal
+        "Research": "#45B7D1",        // Sky blue
+        "Neuroscience": "#96CEB4",    // Sage green
+        "Engineering": "#FFBE0B",     // Golden yellow
+        "Education": "#4CAF50",       // Green
+        "AI": "#9B5DE5",               // Purple
+        "Programming": "#00BCD4",     // Cyan
+        "Psychology": "#FF85A1"        // Pink
+      };
+      return groupColors[group] || "#78909C"; // Default color
+    }
+    
+    // ---------------------
+    // 5. Plotly Configuration
+    // ---------------------
+    
+    const layout = {
+      title: {
+        text: 'Comprehensive Skill Galaxy',
+        font: {
+          family: 'Arial, sans-serif',
+          size: 24,
+          color: '#333'
         },
-        symbol: 'circle',
-        sizemode: 'diameter',
-        sizeref: 0.1,
-        sizemin: 4,
-        colorscale: 'Viridis',
-        showscale: true,
-        reversescale: false,
-        
-        gradient: {
-          type: 'radial',
-          color: 'white'
+        y: 0.95
+      },
+      scene: {
+        xaxis: {
+          title: {
+            text: 'Proficiency',
+            font: { size: 14 }
+          },
+          gridcolor: '#e0e0e0',
+          zerolinecolor: '#999',
+          showbackground: true,
+          backgroundcolor: 'rgba(247, 247, 247, 0.95)',
+          showspikes: true,
+          spikesides: true,
+          spikethickness: 1,
+          spikecolor: '#999',
+          gridwidth: 1,
+          nticks: 10,
+          range: [0, 1]
+        },
+        yaxis: {
+          title: {
+            text: 'Importance',
+            font: { size: 14 }
+          },
+          gridcolor: '#e0e0e0',
+          zerolinecolor: '#999',
+          showbackground: true,
+          backgroundcolor: 'rgba(247, 247, 247, 0.95)',
+          showspikes: true,
+          spikesides: true,
+          spikethickness: 1,
+          spikecolor: '#999',
+          gridwidth: 1,
+          nticks: 10,
+          range: [0, 1]
+        },
+        zaxis: {
+          title: {
+            text: 'Depth of Expertise',
+            font: { size: 14 }
+          },
+          gridcolor: '#e0e0e0',
+          zerolinecolor: '#999',
+          showbackground: true,
+          backgroundcolor: 'rgba(247, 247, 247, 0.95)',
+          showspikes: true,
+          spikesides: true,
+          spikethickness: 1,
+          spikecolor: '#999',
+          gridwidth: 1,
+          nticks: 10,
+          range: [0, 1]
+        },
+        camera: {
+          eye: { x: 1.8, y: 1.8, z: 1.8 },
+          up: { x: 0, y: 0, z: 1 },
+          center: { x: 0, y: 0, z: 0 },
+          projection: {
+            type: 'perspective',
+            distance: 2.5,
+            distanceratio: 0.3
+          }
+        },
+        aspectratio: { x: 1.2, y: 1.2, z: 1 },
+        dragmode: 'orbit',
+        hovermode: 'closest',
+        annotations: [],
+        lighting: {
+          ambient: 0.6,
+          diffuse: 0.8,
+          specular: 0.2,
+          roughness: 0.5,
+          fresnel: 0.8
         }
       },
-      hovertemplate:
-        '<div style="background: rgba(255,255,255,0.95); padding: 10px; border-radius: 5px;">' +
-        '<b style="font-size: 14px; color: #333;">%{text}</b><br>' +
-        '<span style="color: #666;">Group:</span> ' + group + '<br>' +
-        '<span style="color: #666;">Proficiency:</span> %{x:.2f}<br>' +
-        '<span style="color: #666;">Importance:</span> %{y:.2f}<br>' +
-        '<span style="color: #666;">Expertise:</span> %{z:.2f}<br>' +
-        '<span style="color: #666;">Impact:</span> %{marker.size:.1f}' +
-        '</div><extra></extra>',
-      hoverlabel: {
-        bgcolor: 'rgba(255, 255, 255, 0.95)',
-        bordercolor: '#333',
-        font: { 
-          family: 'Arial, sans-serif',
-          size: 13
-        },
-        align: 'left'
+      margin: { l: 0, r: 0, t: 50, b: 0 },
+      showlegend: true,
+      legend: {
+        x: 0,
+        y: 1,
+        bgcolor: 'rgba(255, 255, 255, 0.9)',
+        bordercolor: '#e0e0e0',
+        borderwidth: 1,
+        font: { size: 12 }
+      },
+      paper_bgcolor: '#f7f7f7',
+      plot_bgcolor: '#f7f7f7'
+    };
+    
+    const config = {
+      responsive: true,
+      scrollZoom: true,
+      displayModeBar: true,
+      modeBarButtonsToAdd: [
+        'hoverclosest',
+        'hovercompare',
+        'togglespikelines',
+        {
+          name: 'Reset View',
+          icon: Plotly.Icons.home,
+          click: function(gd) {
+            Plotly.relayout(gd, {
+              'scene.camera': layout.scene.camera
+            });
+          }
+        }
+      ],
+      modeBarButtonsToRemove: ['toImage'],
+      displaylogo: false
+    };
+    
+    // Master arrays for filtered data & plotly trace
+    let filteredData = [];
+    let currentTrace = null;
+    
+    // ---------------------
+    // 6. Plot Rendering Function
+    // ---------------------
+    
+    // Build an enhanced trace from a dataset
+    function makeTrace(dataArray) {
+      const groups = [...new Set(dataArray.map(d => d.Group))];
+      return groups.map(group => {
+        const groupData = dataArray.filter(d => d.Group === group);
+        return {
+          type: 'scatter3d',
+          mode: 'markers+text',
+          name: group,
+          x: groupData.map(d => d.X),
+          y: groupData.map(d => d.Y),
+          z: groupData.map(d => computeZ(d.X, d.Y)),
+          text: groupData.map(d => d.Label),
+          textposition: 'top center',
+          textfont: {
+            family: 'Arial, sans-serif',
+            size: parseInt(labelSizeInput.value),
+            color: 'rgba(0, 0, 0, 0.7)'
+          },
+          marker: {
+            size: groupData.map(d => d.Size * 2),
+            color: groupData.map(d => colorByGroup(d.ColorCode)),
+            opacity: 0.85,
+            line: {
+              color: 'rgba(255, 255, 255, 0.8)',
+              width: 1.5
+            },
+            symbol: 'circle',
+            sizemode: 'diameter',
+            sizeref: 0.1,
+            sizemin: 4,
+            colorscale: 'Viridis',
+            showscale: true,
+            reversescale: false,
+            gradient: {
+              type: 'radial',
+              color: 'white'
+            }
+          },
+          hovertemplate:
+            '<div style="background: rgba(255,255,255,0.95); padding: 10px; border-radius: 5px;">' +
+            '<b style="font-size: 14px; color: #333;">%{text}</b><br>' +
+            '<span style="color: #666;">Group:</span> ' + group + '<br>' +
+            '<span style="color: #666;">Proficiency:</span> %{x:.2f}<br>' +
+            '<span style="color: #666;">Importance:</span> %{y:.2f}<br>' +
+            '<span style="color: #666;">Expertise:</span> %{z:.2f}<br>' +
+            '<span style="color: #666;">Impact:</span> %{marker.size:.1f}' +
+            '</div><extra></extra>',
+          hoverlabel: {
+            bgcolor: 'rgba(255, 255, 255, 0.95)',
+            bordercolor: '#333',
+            font: { 
+              family: 'Arial, sans-serif',
+              size: 13
+            },
+            align: 'left'
+          }
+        };
+      });
+    }
+    
+    // ---------------------
+    // 7. Plot Update Function
+    // ---------------------
+    
+    function updatePlot() {
+      // Show pre-render placeholder
+      const preRender = document.getElementById('pre-render');
+      preRender.style.display = 'flex';
+
+      showLoading();
+      const selectedGroup = groupFilterSelect.value;
+      const searchTerm = searchSkillInput.value.toLowerCase();
+    
+      filteredData = allSkills.filter(d => {
+        if (selectedGroup !== "All" && d.Group !== selectedGroup) return false;
+        if (searchTerm && !d.Skill.toLowerCase().includes(searchTerm)) return false;
+        return true;
+      });
+    
+      const traces = makeTrace(filteredData);
+    
+      Plotly.react('plot', traces, layout, config) // Use Plotly.react for better performance
+        .then(() => {
+          // Hide pre-render placeholder
+          preRender.style.display = 'none';
+          hideLoading();
+          // Use custom animation duration
+          const duration = window.animationDuration || 500;
+          Plotly.animate('plot', {
+            data: traces,
+            layout: layout
+          }, {
+            transition: {
+              duration: duration,
+              easing: 'cubic-in-out'
+            },
+            frame: {
+              duration: duration
+            }
+          });
+        })
+        .catch(error => {
+          console.error('Plot update error:', error);
+          showError('Error updating visualization');
+          hideLoading();
+          preRender.style.display = 'none';
+        });
+    }
+    
+    // ---------------------
+    // 8. Coloring Logic (Group vs Size)
+    // ---------------------
+    function applyColorBy() {
+      if (!currentTrace) return;
+    
+      if (colorBySelect.value === "Size") {
+        // Color by size (using a hue gradient)
+        const newColors = filteredData.map(skill => {
+          const hue = Math.floor((skill.Size / 15) * 240); 
+          return `hsl(${hue}, 70%, 50%)`;
+        });
+        Plotly.restyle('plot', { 'marker.color': [newColors] });
+      } else {
+        // Color by group
+        const newColors = filteredData.map(skill => colorByGroup(skill.ColorCode));
+        Plotly.restyle('plot', { 'marker.color': [newColors] });
+      }
+    }
+    
+    // ---------------------
+    // 9. Event Handlers & Reset
+    // ---------------------
+    colorBySelect.addEventListener('change', applyColorBy);
+    groupFilterSelect.addEventListener('change', updatePlot);
+    searchSkillInput.addEventListener('keyup', updatePlot);
+    
+    resetBtn.addEventListener('click', () => {
+      groupFilterSelect.value = "All";
+      searchSkillInput.value = "";
+      colorBySelect.value = "Group";
+      updatePlot();
+    });
+    
+    // ---------------------
+    // 10. On Page Load: Render the Plot
+    // ---------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      updatePlot();
+    });
+    
+    // View preset configurations
+    const viewPresets = {
+      default: {
+        eye: { x: 1.8, y: 1.8, z: 1.8 },
+        center: { x: 0, y: 0, z: 0 }
+      },
+      top: {
+        eye: { x: 0, y: 0, z: 2.5 },
+        center: { x: 0, y: 0, z: 0 }
+      },
+      side: {
+        eye: { x: 2.5, y: 0, z: 0 },
+        center: { x: 0, y: 0, z: 0 }
+      },
+      cluster: {
+        eye: { x: 2, y: 2, z: 2 },
+        center: { x: 0.5, y: 0.5, z: 0.5 }
       }
     };
-  });
-}
-
-// Enhanced color mapping
-function colorByGroup(group) {
-  const groupColors = {
-    "Soft Skills": "#FF6B6B",     // Warm red
-    "Data Science": "#4ECDC4",    // Teal
-    "Research": "#45B7D1",        // Sky blue
-    "Neuroscience": "#96CEB4",    // Sage green
-    "Engineering": "#FFBE0B",     // Golden yellow
-    "Education": "#4CAF50",       // Green
-    "AI": "#9B5DE5",             // Purple
-    "Programming": "#00BCD4",     // Cyan
-    "Psychology": "#FF85A1"       // Pink
-  };
-  return groupColors[group] || "#78909C"; // Default color
-}
-
-// Enhanced Z-value computation
-function computeZ(x, y) {
-  const base = (Math.pow(x, 1.2) + Math.pow(y, 1.2)) / 2;
-  const variation = Math.sin(x * Math.PI) * Math.cos(y * Math.PI) * 0.1;
-  return Math.max(0, Math.min(1, base + variation));
-}
-
-// --------------------------------------
-// 5. Filter & Re-render the Plot
-// --------------------------------------
-function updatePlot() {
-  showLoading();
-  const selectedGroup = groupFilterSelect.value;
-  const searchTerm = searchSkillInput.value.toLowerCase();
-
-  filteredData = allSkills.filter(d => {
-    if (selectedGroup !== "All" && d.Group !== selectedGroup) return false;
-    if (searchTerm && !d.Skill.toLowerCase().includes(searchTerm)) return false;
-    return true;
-  });
-
-  const traces = makeTrace(filteredData);
-
-  Plotly.newPlot('plot', traces, layout, config)
-    .then(() => {
-      hideLoading();
-      // Use custom animation duration
-      const duration = window.animationDuration || 500;
-      Plotly.animate('plot', {
-        data: traces,
-        layout: layout
-      }, {
-        transition: {
-          duration: duration,
-          easing: 'cubic-in-out'
-        },
-        frame: {
-          duration: duration
-        }
-      });
-    })
-    .catch(error => {
-      console.error('Plot update error:', error);
-      showError('Error updating visualization');
-      hideLoading();
+    
+    // Handle view preset changes
+    viewPresetsSelect.addEventListener('change', (e) => {
+      const preset = viewPresets[e.target.value];
+      if (preset) {
+        Plotly.relayout('plot', {
+          'scene.camera.eye': preset.eye,
+          'scene.camera.center': preset.center
+        });
+      }
     });
-}
-
-// --------------------------------------
-// 6. Coloring Logic (Group vs Size)
-// --------------------------------------
-function applyColorBy() {
-  if (!currentTrace) return;
-
-  if (colorBySelect.value === "Size") {
-    // Color by size (using a hue gradient)
-    const newColors = currentTrace.marker.size.map(size => {
-      const hue = Math.floor((size / 15) * 240); 
-      return `hsl(${hue}, 70%, 50%)`;
+    
+    // Handle animation speed changes
+    animationSpeedInput.addEventListener('input', (e) => {
+      const duration = parseInt(e.target.value);
+      // Store for use in updatePlot
+      window.animationDuration = duration;
     });
-    Plotly.restyle('plot', { 'marker.color': [newColors] });
-  } else {
-    // Color by group
-    const newColors = filteredData.map(skill => colorByGroup(skill.ColorCode));
-    Plotly.restyle('plot', { 'marker.color': [newColors] });
-  }
-}
-
-// --------------------------------------
-// 7. Event Handlers & Reset
-// --------------------------------------
-colorBySelect.addEventListener('change', applyColorBy);
-groupFilterSelect.addEventListener('change', updatePlot);
-searchSkillInput.addEventListener('keyup', updatePlot);
-
-resetBtn.addEventListener('click', () => {
-  groupFilterSelect.value = "All";
-  searchSkillInput.value = "";
-  colorBySelect.value = "Group";
-  updatePlot();
-});
-
-// --------------------------------------
-// 8. On Page Load: Render the Plot
-// --------------------------------------
-updatePlot();
-
-// View preset configurations
-const viewPresets = {
-  default: {
-    eye: { x: 1.8, y: 1.8, z: 1.8 },
-    center: { x: 0, y: 0, z: 0 }
-  },
-  top: {
-    eye: { x: 0, y: 0, z: 2.5 },
-    center: { x: 0, y: 0, z: 0 }
-  },
-  side: {
-    eye: { x: 2.5, y: 0, z: 0 },
-    center: { x: 0, y: 0, z: 0 }
-  },
-  cluster: {
-    eye: { x: 2, y: 2, z: 2 },
-    center: { x: 0.5, y: 0.5, z: 0.5 }
-  }
-};
-
-// Handle view preset changes
-viewPresetsSelect.addEventListener('change', (e) => {
-  const preset = viewPresets[e.target.value];
-  if (preset) {
-    Plotly.relayout('plot', {
-      'scene.camera.eye': preset.eye,
-      'scene.camera.center': preset.center
+    
+    // Handle label size changes
+    labelSizeInput.addEventListener('input', (e) => {
+      const size = parseInt(e.target.value);
+      const update = {
+        'textfont.size': size
+      };
+      Plotly.restyle('plot', update);
     });
-  }
-});
+    
+    // Add additional CSS for range sliders
+    const style = document.createElement('style');
+    style.textContent = `
+      .control-group input[type="range"] {
+        width: 100%;
+        margin: 8px 0;
+      }
+      
+      .control-panel select,
+      .control-panel input[type="range"] {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 4px;
+      }
+      
+      .control-panel input[type="range"]::-webkit-slider-thumb {
+        background: #0066cc;
+        border: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        cursor: pointer;
+        margin-top: -6px;
+      }
+      
+      .control-panel input[type="range"]::-moz-range-thumb {
+        background: #0066cc;
+        border: none;
+        height: 16px;
+        width: 16px;
+        border-radius: 50%;
+        cursor: pointer;
+      }
+    `;
+    document.head.appendChild(style);
 
-// Handle animation speed changes
-animationSpeedInput.addEventListener('input', (e) => {
-  const duration = parseInt(e.target.value);
-  // Store for use in updatePlot
-  window.animationDuration = duration;
-});
+    // Skill Relationship Management
+    class SkillRelationshipManager {
+      constructor(skills) {
+        this.skills = skills;
+        this.relationships = this.computeRelationships();
+      }
 
-// Handle label size changes
-labelSizeInput.addEventListener('input', (e) => {
-  const size = parseInt(e.target.value);
-  const update = {
-    'textfont.size': size
-  };
-  Plotly.restyle('plot', update);
-});
+      computeRelationships() {
+        const relationships = new Map();
+        
+        this.skills.forEach(skill => {
+          relationships.set(skill.Skill, {
+            related: this.findRelatedSkills(skill),
+            dependencies: this.findDependencies(skill),
+            synergies: this.findSynergies(skill)
+          });
+        });
+        
+        return relationships;
+      }
 
-// Add CSS for new controls
-const style = document.createElement('style');
-style.textContent = `
-  .control-group input[type="range"] {
-    width: 100%;
-    margin: 8px 0;
-  }
-  
-  .control-panel select,
-  .control-panel input[type="range"] {
-    background: white;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    padding: 4px;
-  }
-  
-  .control-panel input[type="range"]::-webkit-slider-thumb {
-    background: #0066cc;
-  }
-  
-  .control-panel input[type="range"]::-moz-range-thumb {
-    background: #0066cc;
-  }
-`;
-document.head.appendChild(style);
-</script>
+      findRelatedSkills(skill) {
+        return this.skills
+          .filter(s => 
+            s.Group === skill.Group && 
+            s.Skill !== skill.Skill &&
+            Math.abs(s.X - skill.X) < 0.2 &&
+            Math.abs(s.Y - skill.Y) < 0.2
+          )
+          .map(s => s.Skill);
+      }
+
+      findDependencies(skill) {
+        return this.skills
+          .filter(s => 
+            s.X < skill.X &&
+            Math.abs(s.Y - skill.Y) < 0.3
+          )
+          .map(s => s.Skill);
+      }
+
+      findSynergies(skill) {
+        return this.skills
+          .filter(s =>
+            s.Group !== skill.Group &&
+            Math.abs(s.Size - skill.Size) < 2 &&
+            Math.abs(s.X - skill.X) < 0.15
+          )
+          .map(s => s.Skill);
+      }
+    }
+
+    // Skill Details Panel Manager
+    class SkillDetailsPanelManager {
+      constructor(panel, relationshipManager) {
+        this.panel = panel;
+        this.relationshipManager = relationshipManager;
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        this.panel.querySelector('.close-btn').addEventListener('click', () => {
+          this.hidePanel();
+        });
+      }
+
+      showPanel(skill) {
+        const relationships = this.relationshipManager.relationships.get(skill.Skill);
+        this.updatePanelContent(skill, relationships);
+        this.panel.classList.add('active');
+      }
+
+      hidePanel() {
+        this.panel.classList.remove('active');
+      }
+
+      updatePanelContent(skill, relationships) {
+        const metricsDiv = this.panel.querySelector('.skill-metrics');
+        const relatedDiv = this.panel.querySelector('.related-skills');
+        const progressionDiv = this.panel.querySelector('.skill-progression');
+
+        // Update metrics
+        metricsDiv.innerHTML = `
+          <div class="metric-card">
+            <div class="metric-value">${(skill.X * 100).toFixed(0)}%</div>
+            <div class="metric-label">Proficiency</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${(skill.Y * 100).toFixed(0)}%</div>
+            <div class="metric-label">Importance</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${skill.Size}</div>
+            <div class="metric-label">Impact</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-value">${relationships.synergies.length}</div>
+            <div class="metric-label">Synergies</div>
+          </div>
+        `;
+
+        // Update related skills
+        relatedDiv.innerHTML = `
+          <h4>Related Skills</h4>
+          <div class="skill-tags">
+            ${relationships.related.map(skill => 
+              `<span class="skill-tag">${skill}</span>`
+            ).join('')}
+          </div>
+        `;
+
+        // Update progression
+        progressionDiv.innerHTML = `
+          <h4>Skill Progress</h4>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width: ${skill.X * 100}%"></div>
+          </div>
+        `;
+      }
+    }
+
+    // Connection Renderer
+    class SkillConnectionRenderer {
+      constructor(canvas, skills, relationshipManager) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.skills = skills;
+        this.relationshipManager = relationshipManager;
+        this.setupCanvas();
+      }
+
+      setupCanvas() {
+        this.resizeCanvas();
+        window.addEventListener('resize', () => this.resizeCanvas());
+      }
+
+      resizeCanvas() {
+        this.canvas.width = window.innerWidth;
+        this.canvas.height = window.innerHeight;
+      }
+
+      drawConnections(activeSkill) {
+        this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+        
+        if (!activeSkill) return;
+
+        const relationships = this.relationshipManager.relationships.get(activeSkill.Skill);
+        
+        // Draw different types of connections
+        this.drawRelationshipLines(activeSkill, relationships.related, 'rgba(75, 192, 192, 0.4)', 2);
+        this.drawRelationshipLines(activeSkill, relationships.dependencies, 'rgba(255, 99, 132, 0.4)', 2);
+        this.drawRelationshipLines(activeSkill, relationships.synergies, 'rgba(153, 102, 255, 0.4)', 2);
+      }
+
+      drawRelationshipLines(sourceSkill, relatedSkills, color, width) {
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = color;
+        this.ctx.lineWidth = width;
+
+        relatedSkills.forEach(skillName => {
+          const targetSkill = this.skills.find(s => s.Skill === skillName);
+          if (targetSkill) {
+            // Convert 3D coordinates to 2D screen coordinates
+            // This would need to be coordinated with Plotly's current view
+            // You'll need to implement this conversion based on your specific needs
+            this.ctx.moveTo(sourceSkill.screenX, sourceSkill.screenY);
+            this.ctx.lineTo(targetSkill.screenX, targetSkill.screenY);
+          }
+        });
+
+        this.ctx.stroke();
+      }
+    }
+
+    // Initialize new features
+    const relationshipManager = new SkillRelationshipManager(allSkills);
+    const detailsPanel = new SkillDetailsPanelManager(
+      document.querySelector('.skill-details-panel'),
+      relationshipManager
+    );
+    const connectionRenderer = new SkillConnectionRenderer(
+      document.getElementById('connectionCanvas'),
+      allSkills,
+      relationshipManager
+    );
+
+    // Modify the existing plot click handler
+    plot.on('plotly_click', (data) => {
+      const point = data.points[0];
+      const skill = allSkills.find(s => 
+        s.X === point.x && 
+        s.Y === point.y && 
+        s.Group === point.data.name
+      );
+      
+      if (skill) {
+        detailsPanel.showPanel(skill);
+        connectionRenderer.drawConnections(skill);
+      }
+    });
+  </script>
 </body>
 </html>

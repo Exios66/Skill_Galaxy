@@ -1,99 +1,77 @@
-# Skill Galaxy Visualization
+# Comprehensive Skill Galaxy Visualization
 
-An interactive 3D visualization tool for exploring and analyzing various skills across different domains. The visualization presents skills as a galaxy of interconnected points, allowing users to explore relationships between different skills, their importance, and proficiency levels.
+An interactive 3D visualization tool for exploring and analyzing professional skills and their relationships.
 
 ## Features
 
-### 1. Interactive 3D Visualization
+### Core Visualization
+- 3D interactive plot showing skills as nodes in a galaxy
+- Skills are organized by proficiency, importance, and depth of expertise
+- Dynamic color coding by group or skill size
+- Customizable label sizes and animation speeds
 
-- Dynamic 3D scatter plot using Plotly.js
-- Skills represented as interactive points in 3D space
-- Axes represent:
-  - X-axis: Proficiency
-  - Y-axis: Importance
-  - Z-axis: Depth of Expertise
-- Hover functionality showing detailed information for each skill
+### Interactive Controls
+- Filter skills by group or search term
+- Multiple view presets (Default, Top, Side, Cluster)
+- Adjustable animation speed and label size
+- Reset functionality to restore default settings
 
-### 2. Control Panel
+### Skill Details Panel
+- Detailed metrics for each skill:
+  - Proficiency percentage
+  - Importance rating
+  - Impact score
+  - Number of synergies
+- Related skills visualization
+- Skill progression indicator
 
-The visualization includes a user-friendly control panel with the following features:
-
-#### Group Filtering
-
-- Filter skills by specific groups (e.g., Soft Skills, Data Science, AI, etc.)
-- "All Groups" option to view the complete skill set
-
-#### Skill Search
-
-- Real-time search functionality to filter skills by name
-- Case-insensitive search for better user experience
-
-#### Color Options
-
-- Two coloring schemes:
-  - Color by Group: Different colors for different skill categories
-  - Color by Size: Gradient coloring based on skill importance/size
-
-#### Reset Functionality
-
-- "Reset Filters" button to clear all applied filters and return to the default view
-
-### 3. Skill Categories
-
-The visualization includes various skill categories:
-
-- Soft Skills
-- Data Science
-- Research
-- Neuroscience
-- Engineering
-- Education
-- AI
-- Programming
-- Psychology
-
-### 4. Responsive Design
-
-- Fully responsive layout that adapts to different screen sizes
-- Mobile-friendly interface with optimized control panel positioning
-- Smooth interactions and transitions
+### Relationship Visualization
+- Dynamic connection lines between related skills
+- Three types of relationships:
+  - Related skills (same group)
+  - Dependencies (prerequisite skills)
+  - Synergies (complementary skills)
+- Color-coded connections for different relationship types
 
 ## Technical Details
 
 ### Dependencies
+- Plotly.js for 3D visualization
+- Pure JavaScript for interactivity
+- HTML5 Canvas for relationship rendering
 
-- Plotly.js (latest version) for 3D visualization
-- Pure HTML/CSS/JavaScript implementation
-- No additional frameworks required
+### Browser Support
+- Modern browsers (Chrome, Firefox, Safari, Edge)
+- Responsive design for desktop and mobile devices
 
-### Browser Compatibility
-
-- Works on modern web browsers supporting WebGL
-- Recommended browsers: Chrome, Firefox, Safari, Edge
+### Performance Optimizations
+- Efficient data filtering and rendering
+- Smooth animations with configurable duration
+- Pre-render placeholder for better user experience
 
 ## Usage
 
-1. **Basic Navigation**:
-   - Rotate: Click and drag
+1. **Basic Navigation**
+   - Orbit: Click and drag
    - Zoom: Scroll or pinch
    - Pan: Right-click and drag
 
-2. **Filtering**:
+2. **Filtering Skills**
    - Use the group dropdown to filter by skill category
    - Type in the search box to find specific skills
-   - Switch between color modes using the color options dropdown
+   - Reset filters using the reset button
 
-3. **Reset**:
-   - Click the "Reset Filters" button to clear all applied filters
+3. **Viewing Skill Details**
+   - Click on any skill node to view detailed information
+   - View related skills and their connections
+   - Monitor skill progression and metrics
 
-## Installation
+4. **Customizing the View**
+   - Select different view presets for optimal viewing angles
+   - Adjust label sizes for better readability
+   - Modify animation speed for smooth transitions
 
-1. Clone the repository
-2. Open `index.html` in a modern web browser
-3. No build process or server required
+## Implementation Notes
 
-## Performance Considerations
-
-- The visualization is optimized for smooth performance with 40+ skills
-- Responsive design ensures proper functionality across devices
-- Efficient filtering and rendering mechanisms for smooth user experience
+### Data Structure
+Skills are represented with the following properties:
