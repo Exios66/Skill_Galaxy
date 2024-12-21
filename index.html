@@ -311,6 +311,137 @@
       background: linear-gradient(90deg, #4CAF50 0%, #8BC34A 100%);
       transition: width 0.3s ease;
     }
+
+    /* Dark Mode Styles */
+    :root {
+      --bg-color: #f7f7f7;
+      --text-color: #333;
+      --panel-bg: rgba(255, 255, 255, 0.95);
+      --panel-shadow: rgba(0, 0, 0, 0.1);
+      --accent-color: #0066cc;
+      --hover-color: #004999;
+      --border-color: #ccc;
+      --card-bg: #f8f9fa;
+    }
+
+    [data-theme="dark"] {
+      --bg-color: #1a1a1a;
+      --text-color: #e0e0e0;
+      --panel-bg: rgba(40, 40, 40, 0.95);
+      --panel-shadow: rgba(0, 0, 0, 0.3);
+      --accent-color: #4d94ff;
+      --hover-color: #3385ff;
+      --border-color: #404040;
+      --card-bg: #2d2d2d;
+    }
+
+    body {
+      background: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    /* Theme Toggle Button */
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      z-index: 1000;
+    }
+
+    .theme-toggle button {
+      background: var(--panel-bg);
+      border: none;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px var(--panel-shadow);
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle button:hover {
+      transform: scale(1.1);
+    }
+
+    .theme-toggle svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--text-color);
+    }
+
+    .sun-icon {
+      display: none;
+    }
+
+    [data-theme="dark"] .sun-icon {
+      display: block;
+    }
+
+    [data-theme="dark"] .moon-icon {
+      display: none;
+    }
+
+    /* Enhanced Control Panel */
+    .control-panel {
+      background: var(--panel-bg);
+      box-shadow: 0 4px 20px var(--panel-shadow);
+      transition: all 0.3s ease;
+    }
+
+    .control-panel select,
+    .control-panel input[type="text"] {
+      background: var(--bg-color);
+      color: var(--text-color);
+      border: 1px solid var(--border-color);
+    }
+
+    .control-panel button {
+      background: var(--accent-color);
+    }
+
+    .control-panel button:hover {
+      background: var(--hover-color);
+    }
+
+    /* Enhanced Skill Details Panel */
+    .skill-details-panel {
+      background: var(--panel-bg);
+      box-shadow: 0 4px 20px var(--panel-shadow);
+    }
+
+    .metric-card {
+      background: var(--card-bg);
+      color: var(--text-color);
+      transition: transform 0.2s ease;
+    }
+
+    .metric-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .skill-tag {
+      background: var(--card-bg);
+      color: var(--text-color);
+      transition: all 0.2s ease;
+    }
+
+    .skill-tag:hover {
+      background: var(--accent-color);
+      color: white;
+    }
+
+    /* Enhanced Progress Bar */
+    .progress-bar {
+      background: var(--card-bg);
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--accent-color) 0%, var(--hover-color) 100%);
+    }
   </style>
 </head>
 <body>
@@ -362,6 +493,19 @@
     </div>
     
     <div class="control-group">
+      <label for="visualizationMode">Visualization Mode:</label>
+      <select id="visualizationMode">
+        <option value="galaxy">3D Skill Galaxy</option>
+        <option value="network">Network Graph</option>
+        <option value="treemap">Skill TreeMap</option>
+        <option value="radar">Radar Chart</option>
+        <option value="sunburst">Sunburst Hierarchy</option>
+        <option value="timeline">Skill Timeline</option>
+        <option value="matrix">Correlation Matrix</option>
+      </select>
+    </div>
+    
+    <div class="control-group">
       <label for="animationSpeed">Animation Speed:</label>
       <input type="range" id="animationSpeed" min="100" max="1000" value="500" step="100">
     </div>
@@ -390,6 +534,18 @@
   <!-- Add connection canvas for skill relationships -->
   <canvas id="connectionCanvas"></canvas>
   
+  <!-- Add after the control panel div -->
+  <div class="theme-toggle">
+    <button id="themeToggle" aria-label="Toggle dark mode">
+      <svg class="sun-icon" viewBox="0 0 24 24">
+        <path d="M12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.65 0-3 1.35-3 3s1.35 3 3 3 3-1.35 3-3-1.35-3-3-3zm0-2c.28 0 .5-.22.5-.5v-3c0-.28-.22-.5-.5-.5s-.5.22-.5.5v3c0 .28.22.5.5.5zm0 14c-.28 0-.5.22-.5.5v3c0 .28.22.5.5.5s.5-.22.5-.5v-3c0-.28-.22-.5-.5-.5zm7-7c0-.28-.22-.5-.5-.5h-3c-.28 0-.5.22-.5.5s.22.5.5.5h3c.28 0 .5-.22.5-.5zm-11 0c0-.28.22-.5.5-.5h3c.28 0 .5.22.5.5s-.22.5-.5.5h-3c-.28 0-.5-.22-.5-.5z"/>
+      </svg>
+      <svg class="moon-icon" viewBox="0 0 24 24">
+        <path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-3.03 0-5.5-2.47-5.5-5.5 0-1.82.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/>
+      </svg>
+    </button>
+  </div>
+
   <script>
     // ---------------------
     // 1. Utility Functions
@@ -692,32 +848,31 @@
     // ---------------------
     
     function updatePlot() {
-      // Show pre-render placeholder
       const preRender = document.getElementById('pre-render');
       preRender.style.display = 'flex';
-
       showLoading();
-      const selectedGroup = groupFilterSelect.value;
-      const searchTerm = searchSkillInput.value.toLowerCase();
-    
-      filteredData = allSkills.filter(d => {
-        if (selectedGroup !== "All" && d.Group !== selectedGroup) return false;
-        if (searchTerm && !d.Skill.toLowerCase().includes(searchTerm)) return false;
-        return true;
-      });
-    
+
+      const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       const traces = makeTrace(filteredData);
-    
-      Plotly.react('plot', traces, layout, config) // Use Plotly.react for better performance
+      
+      // Update layout colors based on theme
+      const updatedLayout = {
+        ...layout,
+        paper_bgcolor: isDark ? '#1a1a1a' : '#f7f7f7',
+        plot_bgcolor: isDark ? '#1a1a1a' : '#f7f7f7',
+        font: {
+          color: isDark ? '#e0e0e0' : '#333'
+        }
+      };
+
+      Plotly.react('plot', traces, updatedLayout, config)
         .then(() => {
-          // Hide pre-render placeholder
           preRender.style.display = 'none';
           hideLoading();
-          // Use custom animation duration
           const duration = window.animationDuration || 500;
           Plotly.animate('plot', {
             data: traces,
-            layout: layout
+            layout: updatedLayout
           }, {
             transition: {
               duration: duration,
@@ -1060,6 +1215,292 @@
         detailsPanel.showPanel(skill);
         connectionRenderer.drawConnections(skill);
       }
+    });
+
+    // Theme Management
+    class ThemeManager {
+      constructor() {
+        this.themeToggle = document.getElementById('themeToggle');
+        this.currentTheme = localStorage.getItem('theme') || 'light';
+        this.init();
+      }
+
+      init() {
+        document.documentElement.setAttribute('data-theme', this.currentTheme);
+        this.themeToggle.addEventListener('click', () => this.toggleTheme());
+        this.updatePlotColors();
+      }
+
+      toggleTheme() {
+        this.currentTheme = this.currentTheme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', this.currentTheme);
+        localStorage.setItem('theme', this.currentTheme);
+        this.updatePlotColors();
+      }
+
+      updatePlotColors() {
+        const isDark = this.currentTheme === 'dark';
+        const newLayout = {
+          ...layout,
+          paper_bgcolor: isDark ? '#1a1a1a' : '#f7f7f7',
+          plot_bgcolor: isDark ? '#1a1a1a' : '#f7f7f7',
+          font: {
+            color: isDark ? '#e0e0e0' : '#333'
+          },
+          scene: {
+            ...layout.scene,
+            xaxis: {
+              ...layout.scene.xaxis,
+              gridcolor: isDark ? '#404040' : '#e0e0e0',
+              zerolinecolor: isDark ? '#606060' : '#999',
+              backgroundcolor: isDark ? 'rgba(26, 26, 26, 0.95)' : 'rgba(247, 247, 247, 0.95)'
+            },
+            yaxis: {
+              ...layout.scene.yaxis,
+              gridcolor: isDark ? '#404040' : '#e0e0e0',
+              zerolinecolor: isDark ? '#606060' : '#999',
+              backgroundcolor: isDark ? 'rgba(26, 26, 26, 0.95)' : 'rgba(247, 247, 247, 0.95)'
+            },
+            zaxis: {
+              ...layout.scene.zaxis,
+              gridcolor: isDark ? '#404040' : '#e0e0e0',
+              zerolinecolor: isDark ? '#606060' : '#999',
+              backgroundcolor: isDark ? 'rgba(26, 26, 26, 0.95)' : 'rgba(247, 247, 247, 0.95)'
+            }
+          }
+        };
+
+        Plotly.relayout('plot', newLayout);
+      }
+    }
+
+    // Initialize theme manager
+    const themeManager = new ThemeManager();
+
+    // Add to the script section
+    class VisualizationManager {
+      constructor(container, skills) {
+        this.container = container;
+        this.skills = skills;
+        this.currentMode = 'galaxy';
+        this.setupEventListeners();
+      }
+
+      setupEventListeners() {
+        document.getElementById('visualizationMode').addEventListener('change', (e) => {
+          this.switchVisualizationMode(e.target.value);
+        });
+      }
+
+      switchVisualizationMode(mode) {
+        this.currentMode = mode;
+        this.clearContainer();
+        
+        switch (mode) {
+          case 'galaxy':
+            this.render3DGalaxy();
+            break;
+          case 'network':
+            this.renderNetworkGraph();
+            break;
+          case 'treemap':
+            this.renderTreeMap();
+            break;
+          case 'radar':
+            this.renderRadarChart();
+            break;
+          case 'sunburst':
+            this.renderSunburstChart();
+            break;
+          case 'timeline':
+            this.renderTimeline();
+            break;
+          case 'matrix':
+            this.renderCorrelationMatrix();
+            break;
+        }
+      }
+
+      clearContainer() {
+        while (this.container.firstChild) {
+          this.container.removeChild(this.container.firstChild);
+        }
+      }
+
+      render3DGalaxy() {
+        // Existing 3D galaxy visualization
+        updatePlot();
+      }
+
+      renderNetworkGraph() {
+        const trace = {
+          type: 'scatter',
+          mode: 'markers+text',
+          x: this.skills.map(s => s.X),
+          y: this.skills.map(s => s.Y),
+          text: this.skills.map(s => s.Label),
+          textposition: 'top center',
+          marker: {
+            size: this.skills.map(s => s.Size * 3),
+            color: this.skills.map(s => colorByGroup(s.Group))
+          },
+          hoverinfo: 'text'
+        };
+
+        const layout = {
+          title: 'Skill Network',
+          showlegend: false,
+          hovermode: 'closest',
+          xaxis: { showgrid: false, zeroline: false, showticklabels: false },
+          yaxis: { showgrid: false, zeroline: false, showticklabels: false }
+        };
+
+        Plotly.newPlot(this.container, [trace], layout);
+      }
+
+      renderTreeMap() {
+        const data = [{
+          type: 'treemap',
+          labels: this.skills.map(s => s.Label),
+          parents: this.skills.map(s => s.Group),
+          values: this.skills.map(s => s.Size),
+          textinfo: 'label+value',
+          marker: {
+            colors: this.skills.map(s => colorByGroup(s.Group))
+          }
+        }];
+
+        const layout = {
+          title: 'Skill Distribution TreeMap'
+        };
+
+        Plotly.newPlot(this.container, data, layout);
+      }
+
+      renderRadarChart() {
+        const groups = [...new Set(this.skills.map(s => s.Group))];
+        const data = groups.map(group => {
+          const groupSkills = this.skills.filter(s => s.Group === group);
+          return {
+            type: 'scatterpolar',
+            name: group,
+            r: groupSkills.map(s => s.Size),
+            theta: groupSkills.map(s => s.Label),
+            fill: 'toself',
+            line: {
+              color: colorByGroup(group)
+            }
+          };
+        });
+
+        const layout = {
+          title: 'Skill Radar Chart',
+          polar: {
+            radialaxis: {
+              visible: true,
+              range: [0, 15]
+            }
+          },
+          showlegend: true
+        };
+
+        Plotly.newPlot(this.container, data, layout);
+      }
+
+      renderSunburstChart() {
+        const data = [{
+          type: 'sunburst',
+          labels: this.skills.map(s => s.Label),
+          parents: this.skills.map(s => s.Group),
+          values: this.skills.map(s => s.Size),
+          outsidetextfont: { size: 20, color: '#377eb8' },
+          leaf: { opacity: 0.4 },
+          marker: { line: { width: 2 } }
+        }];
+
+        const layout = {
+          title: 'Skill Hierarchy Sunburst',
+          width: 1000,
+          height: 1000
+        };
+
+        Plotly.newPlot(this.container, data, layout);
+      }
+
+      renderTimeline() {
+        const trace = {
+          type: 'scatter',
+          mode: 'markers+lines+text',
+          x: this.skills.map((_, i) => i),
+          y: this.skills.map(s => s.Size),
+          text: this.skills.map(s => s.Label),
+          textposition: 'top center',
+          marker: {
+            size: 10,
+            color: this.skills.map(s => colorByGroup(s.Group))
+          },
+          line: { shape: 'spline' }
+        };
+
+        const layout = {
+          title: 'Skill Development Timeline',
+          xaxis: { title: 'Progression' },
+          yaxis: { title: 'Skill Level' }
+        };
+
+        Plotly.newPlot(this.container, [trace], layout);
+      }
+
+      renderCorrelationMatrix() {
+        const groups = [...new Set(this.skills.map(s => s.Group))];
+        const correlationData = groups.map(g1 => 
+          groups.map(g2 => {
+            const skills1 = this.skills.filter(s => s.Group === g1);
+            const skills2 = this.skills.filter(s => s.Group === g2);
+            return this.calculateGroupCorrelation(skills1, skills2);
+          })
+        );
+
+        const data = [{
+          type: 'heatmap',
+          z: correlationData,
+          x: groups,
+          y: groups,
+          colorscale: 'Viridis'
+        }];
+
+        const layout = {
+          title: 'Skill Group Correlation Matrix',
+          xaxis: { side: 'bottom' },
+          yaxis: { autorange: 'reversed' }
+        };
+
+        Plotly.newPlot(this.container, data, layout);
+      }
+
+      calculateGroupCorrelation(skills1, skills2) {
+        const sizes1 = skills1.map(s => s.Size);
+        const sizes2 = skills2.map(s => s.Size);
+        const mean1 = sizes1.reduce((a, b) => a + b, 0) / sizes1.length;
+        const mean2 = sizes2.reduce((a, b) => a + b, 0) / sizes2.length;
+        
+        const correlation = sizes1.reduce((acc, size1, i) => 
+          acc + (size1 - mean1) * (sizes2[i % sizes2.length] - mean2), 0
+        ) / Math.sqrt(
+          sizes1.reduce((acc, size) => acc + Math.pow(size - mean1, 2), 0) *
+          sizes2.reduce((acc, size) => acc + Math.pow(size - mean2, 2), 0)
+        );
+
+        return correlation;
+      }
+    }
+
+    // Initialize visualization manager after DOM content is loaded
+    document.addEventListener('DOMContentLoaded', () => {
+      const visualizationManager = new VisualizationManager(
+        document.getElementById('plot'),
+        allSkills
+      );
     });
   </script>
 </body>
