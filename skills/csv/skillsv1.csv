@@ -1,0 +1,46 @@
+Skill,Group,Label,X-axis,Y-axis,Size,Color Code
+Negotiation,Soft Skills,Negotiation,0.6,0.55,8,Soft Skills
+Conflict Resolution,Soft Skills,Conflict Resol.,0.6,0.55,8,Soft Skills
+Emotional Intelligence,Soft Skills,Emotional Intell.,0.65,0.6,9,Soft Skills
+Interpersonal Skills,Soft Skills,Interpersonal,0.7,0.65,10,Soft Skills
+Decision Making,Soft Skills,Decision Making,0.7,0.65,10,Soft Skills
+Strategic Planning,Soft Skills,Strategic Plan.,0.65,0.6,9,Soft Skills
+Organizational Skills,Soft Skills,Org. Skills,0.6,0.55,8,Soft Skills
+Leadership,Soft Skills,Leadership,0.7,0.7,10,Soft Skills
+Creativity,Soft Skills,Creativity,0.65,0.65,9,Soft Skills
+Attention to Detail,Soft Skills,Attention Detail,0.6,0.6,8,Soft Skills
+Adaptability,Soft Skills,Adaptability,0.55,0.5,7,Soft Skills
+Collaboration,Soft Skills,Collaboration,0.6,0.55,8,Soft Skills
+Problem Solving,Soft Skills,Problem Solving,0.65,0.65,9,Soft Skills
+Critical Thinking,Soft Skills,Critical Thinking,0.6,0.6,8,Soft Skills
+Public Speaking,Soft Skills,Public Speaking,0.55,0.5,7,Soft Skills
+Teaching,Education,Teaching,0.6,0.55,8,Education
+Regression Analysis,Data Science,Regression,0.7,0.73,10,Data Science
+Hypothesis Testing,Research,Hypothesis Test,0.65,0.7,9,Research
+Bayesian Statistics,Data Science,Bayesian Stats,0.7,0.75,10,Data Science
+Cognitive Neuroscience,Neuroscience,Cog. Neurosci.,0.8,0.9,13,Neuroscience
+Signal Processing,Engineering,Signal Proc.,0.75,0.8,11,Engineering
+Time Series Analysis,Data Science,Time Series,0.68,0.7,9,Data Science
+Project Management,Soft Skills,Project Mgmt,0.6,0.5,8,Soft Skills
+Deep Learning,AI,Deep Learning,0.85,0.8,14,AI
+Data Visualization,Data Science,Data Viz,0.7,0.72,10,Data Science
+Scientific Writing,Research,Sci. Writing,0.65,0.7,9,Research
+Neuroimaging,Neuroscience,Neuroimaging,0.78,0.88,12,Neuroscience
+Experimental Design,Research,Exp. Design,0.72,0.77,10,Research
+Statistical Analysis,Data Science,Stat. Analysis,0.75,0.78,11,Data Science
+Natural Language Processing,AI,NLP,0.88,0.82,13,AI
+Multilingual Communication,Soft Skills,Multilingual,0.6,0.5,5,Soft Skills
+Team Leadership,Soft Skills,Leadership,0.55,0.35,6,Soft Skills
+Communication Skills,Soft Skills,Comm. Skills,0.5,0.4,6,Soft Skills
+K-means Clustering,Data Science,K-means,0.7,0.65,7,Data Science
+TF-IDF Techniques,Data Science,TF-IDF,0.65,0.55,7,Data Science
+Survey Design,Research,Survey Design,0.6,0.6,8,Research
+R (Programming Language),Programming,R,0.85,0.65,9,Programming
+MATLAB,Programming,MATLAB,0.8,0.7,9,Programming
+Research Methodology,Research,Research Methods,0.7,0.8,11,Research
+EEG Data Analysis,Neuroscience,EEG Analysis,0.75,0.9,12,Neuroscience
+Machine Learning,AI,ML,0.9,0.85,14,AI
+Data Analysis,Data Science,Data Analysis,0.7,0.75,10,Data Science
+Psychological Research,Psychology,Psych. Research,0.8,0.9,12,Psychology
+Python (Programming Language),Programming,Python,0.85,0.7,15,Programming
+Large Language Models (LLM),AI,LLM,0.9,0.8,10,AI
