@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Comprehensive Skill Galaxy</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <style>
+    /* ---------------------------
+       1. General Styling
+       --------------------------- */
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f7f7f7;
+      color: #333;
+    }
+    h1, h2, h3 {
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Plot Container */
+    #plot {
+      width: 100vw;
+      height: 100vh;
+    }
+    
+    /* ---------------------------
+       2. Control Panel
+       --------------------------- */
+    .control-panel {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(255,255,255,0.95);
+      padding: 10px 15px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      max-width: 260px;
+      z-index: 10; /* ensure panel floats above the plot */
+    }
+    .control-panel h2 {
+      font-size: 1.1rem;
+      margin-bottom: 10px;
+    }
+    .control-panel .control-group {
+      margin-bottom: 10px;
+    }
+    .control-panel label {
+      display: block;
+      margin-top: 8px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .control-panel select,
+    .control-panel input {
+      width: 100%;
+      margin: 4px 0;
+      padding: 5px;
+      font-size: 0.85rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    .control-panel button {
+      margin-top: 5px;
+      width: 100%;
+      padding: 7px;
+      background: #0066cc;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: background 0.2s ease-in-out;
+    }
+    .control-panel button:hover {
+      background: #004999;
+    }
+
+    /* Responsive for smaller screens */
+    @media (max-width: 600px) {
+      .control-panel {
+        top: auto;
+        bottom: 10px;
+        right: 10px;
+        max-width: 90%;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div id="plot"></div>
+
+<!-- 3. Control Panel to guide user interactions -->
+<div class="control-panel">
+  <h2>Skill Galaxy Controls</h2>
+  
+  <div class="control-group">
+    <label for="groupFilter">Filter by Group:</label>
+    <select id="groupFilter">
+      <option value="All" selected>All Groups</option>
+    </select>
+  </div>
+  
+  <div class="control-group">
+    <label for="searchSkill">Filter by Skill:</label>
+    <input type="text" id="searchSkill" placeholder="Type skill name..."/>
+  </div>
+  
+  <div class="control-group">
+    <label for="colorBy">Color Options:</label>
+    <select id="colorBy">
+      <option value="Group" selected>Color by Group</option>
+      <option value="Size">Color by Size</option>
+    </select>
+  </div>
+  
+  <button id="resetBtn">Reset Filters</button>
+</div>
+
+<script>
+// ---------------------
+// 1. Prepare the Data
+// ---------------------
+
+const allSkills = [
+  {
+    Skill: "Negotiation", Group: "Soft Skills", Label: "Negotiation",
+    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Conflict Resolution", Group: "Soft Skills", Label: "Conflict Resol.",
+    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Emotional Intelligence", Group: "Soft Skills", Label: "Emotional Intell.",
+    X: 0.65, Y: 0.6, Size: 9, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Interpersonal Skills", Group: "Soft Skills", Label: "Interpersonal",
+    X: 0.7, Y: 0.65, Size: 10, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Decision Making", Group: "Soft Skills", Label: "Decision Making",
+    X: 0.7, Y: 0.65, Size: 10, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Strategic Planning", Group: "Soft Skills", Label: "Strategic Plan.",
+    X: 0.65, Y: 0.6, Size: 9, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Organizational Skills", Group: "Soft Skills", Label: "Org. Skills",
+    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Leadership", Group: "Soft Skills", Label: "Leadership",
+    X: 0.7, Y: 0.7, Size: 10, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Creativity", Group: "Soft Skills", Label: "Creativity",
+    X: 0.65, Y: 0.65, Size: 9, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Attention to Detail", Group: "Soft Skills", Label: "Attention Detail",
+    X: 0.6, Y: 0.6, Size: 8, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Adaptability", Group: "Soft Skills", Label: "Adaptability",
+    X: 0.55, Y: 0.5, Size: 7, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Collaboration", Group: "Soft Skills", Label: "Collaboration",
+    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Problem Solving", Group: "Soft Skills", Label: "Problem Solving",
+    X: 0.65, Y: 0.65, Size: 9, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Critical Thinking", Group: "Soft Skills", Label: "Critical Thinking",
+    X: 0.6, Y: 0.6, Size: 8, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Public Speaking", Group: "Soft Skills", Label: "Public Speaking",
+    X: 0.55, Y: 0.5, Size: 7, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Teaching", Group: "Education", Label: "Teaching",
+    X: 0.6, Y: 0.55, Size: 8, ColorCode: "Education"
+  },
+  {
+    Skill: "Regression Analysis", Group: "Data Science", Label: "Regression",
+    X: 0.7, Y: 0.73, Size: 10, ColorCode: "Data Science"
+  },
+  {
+    Skill: "Hypothesis Testing", Group: "Research", Label: "Hypothesis Test",
+    X: 0.65, Y: 0.7, Size: 9, ColorCode: "Research"
+  },
+  {
+    Skill: "Bayesian Statistics", Group: "Data Science", Label: "Bayesian Stats",
+    X: 0.7, Y: 0.75, Size: 10, ColorCode: "Data Science"
+  },
+  {
+    Skill: "Cognitive Neuroscience", Group: "Neuroscience", Label: "Cog. Neurosci.",
+    X: 0.8, Y: 0.9, Size: 13, ColorCode: "Neuroscience"
+  },
+  {
+    Skill: "Signal Processing", Group: "Engineering", Label: "Signal Proc.",
+    X: 0.75, Y: 0.8, Size: 11, ColorCode: "Engineering"
+  },
+  {
+    Skill: "Time Series Analysis", Group: "Data Science", Label: "Time Series",
+    X: 0.68, Y: 0.7, Size: 9, ColorCode: "Data Science"
+  },
+  {
+    Skill: "Project Management", Group: "Soft Skills", Label: "Project Mgmt",
+    X: 0.6, Y: 0.5, Size: 8, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Deep Learning", Group: "AI", Label: "Deep Learning",
+    X: 0.85, Y: 0.8, Size: 14, ColorCode: "AI"
+  },
+  {
+    Skill: "Data Visualization", Group: "Data Science", Label: "Data Viz",
+    X: 0.7, Y: 0.72, Size: 10, ColorCode: "Data Science"
+  },
+  {
+    Skill: "Scientific Writing", Group: "Research", Label: "Sci. Writing",
+    X: 0.65, Y: 0.7, Size: 9, ColorCode: "Research"
+  },
+  {
+    Skill: "Neuroimaging", Group: "Neuroscience", Label: "Neuroimaging",
+    X: 0.78, Y: 0.88, Size: 12, ColorCode: "Neuroscience"
+  },
+  {
+    Skill: "Experimental Design", Group: "Research", Label: "Exp. Design",
+    X: 0.72, Y: 0.77, Size: 10, ColorCode: "Research"
+  },
+  {
+    Skill: "Statistical Analysis", Group: "Data Science", Label: "Stat. Analysis",
+    X: 0.75, Y: 0.78, Size: 11, ColorCode: "Data Science"
+  },
+  {
+    Skill: "Natural Language Processing", Group: "AI", Label: "NLP",
+    X: 0.88, Y: 0.82, Size: 13, ColorCode: "AI"
+  },
+  {
+    Skill: "Multilingual Communication", Group: "Soft Skills", Label: "Multilingual",
+    X: 0.6, Y: 0.5, Size: 5, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Team Leadership", Group: "Soft Skills", Label: "Team Leadership",
+    X: 0.55, Y: 0.35, Size: 6, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "Communication Skills", Group: "Soft Skills", Label: "Comm. Skills",
+    X: 0.7, Y: 0.4, Size: 6, ColorCode: "Soft Skills"
+  },
+  {
+    Skill: "K-means Clustering", Group: "Data Science", Label: "K-means",
+    X: 0.65, Y: 0.65, Size: 7, ColorCode: "Data Science"
+  },
+  {
+    Skill: "TF-IDF Techniques", Group: "Data Science", Label: "TF-IDF",
+    X: 0.6, Y: 0.55, Size: 7, ColorCode: "Data Science"
+  },
+  {
+    Skill: "Survey Design", Group: "Research", Label: "Survey Design",
+    X: 0.85, Y: 0.65, Size: 8, ColorCode: "Research"
+  },
+  {
+    Skill: "R (Programming Language)", Group: "Programming", Label: "R",
+    X: 0.8, Y: 0.7, Size: 9, ColorCode: "Programming"
+  },
+  {
+    Skill: "MATLAB", Group: "Programming", Label: "MATLAB",
+    X: 0.7, Y: 0.7, Size: 9, ColorCode: "Programming"
+  },
+  {
+    Skill: "Research Methodology", Group: "Research", Label: "Research Methods",
+    X: 0.75, Y: 0.8, Size: 11, ColorCode: "Research"
+  },
+  {
+    Skill: "EEG Data Analysis", Group: "Neuroscience", Label: "EEG Analysis",
+    X: 0.9, Y: 0.9, Size: 12, ColorCode: "Neuroscience"
+  },
+  {
+    Skill: "Machine Learning", Group: "AI", Label: "ML",
+    X: 0.7, Y: 0.75, Size: 14, ColorCode: "AI"
+  },
+  {
+    Skill: "Data Analysis", Group: "Data Science", Label: "Data Analysis",
+    X: 0.8, Y: 0.75, Size: 10, ColorCode: "Data Science"
+  },
+  {
+    Skill: "Psychological Research", Group: "Psychology", Label: "Psych. Research",
+    X: 0.85, Y: 0.9, Size: 12, ColorCode: "Psychology"
+  },
+  {
+    Skill: "Python (Programming Language)", Group: "Programming", Label: "Python",
+    X: 0.9, Y: 0.7, Size: 15, ColorCode: "Programming"
+  }
+];
+
+// --------------------------------------
+// 2. Initialize Filters & UI Elements
+// --------------------------------------
+
+const groupFilterSelect = document.getElementById('groupFilter');
+const colorBySelect = document.getElementById('colorBy');
+const searchSkillInput = document.getElementById('searchSkill');
+const resetBtn = document.getElementById('resetBtn');
+
+// Create a list of unique groups for the dropdown
+const uniqueGroups = [...new Set(allSkills.map(d => d.Group))];
+uniqueGroups.forEach(group => {
+  const option = document.createElement('option');
+  option.value = group;
+  option.textContent = group;
+  groupFilterSelect.appendChild(option);
+});
+
+// Function to compute a simple 'Z' value for 3D, combining X & Y
+function computeZ(x, y) {
+  return (x + y) / 2; // or any custom formula
+}
+
+// Master arrays for filtered data & plotly trace
+let filteredData = [];
+let currentTrace = null;
+
+// --------------------------------------
+// 3. Color Mappings & Utility Functions
+// --------------------------------------
+function colorByGroup(group) {
+  const groupColors = {
+    "Soft Skills": "#FF9999",
+    "Data Science": "#FFB366",
+    "Research": "#99CCFF",
+    "Neuroscience": "#FF99FF",
+    "Engineering": "#FFCC99",
+    "Education": "#88CC88",
+    "AI": "#FF66FF",
+    "Programming": "#CCFF99",
+    "Psychology": "#FFCCCC"
+  };
+  return groupColors[group] || "#AAAAAA";
+}
+
+// Build a trace from a dataset
+function makeTrace(dataArray) {
+  return {
+    type: 'scatter3d',
+    mode: 'markers+text',
+    x: dataArray.map(d => d.X),
+    y: dataArray.map(d => d.Y),
+    z: dataArray.map(d => computeZ(d.X, d.Y)),
+    text: dataArray.map(d => d.Label),
+    textposition: 'top center',
+    marker: {
+      size: dataArray.map(d => d.Size),
+      color: dataArray.map(d => colorByGroup(d.ColorCode)),
+      opacity: 0.9,
+    },
+    hovertemplate:
+      '<b>%{text}</b><br>' +
+      'X: %{x:.2f}<br>' +
+      'Y: %{y:.2f}<br>' +
+      'Z: %{z:.2f}<br>' +
+      'Size: %{marker.size}<extra></extra>'
+  };
+}
+
+// --------------------------------------
+// 4. Initial Plotly Layout & Config
+// --------------------------------------
+const layout = {
+  title: 'Comprehensive Skill Galaxy',
+  scene: {
+    xaxis: { title: 'Proficiency' },
+    yaxis: { title: 'Importance' },
+    zaxis: { title: 'Depth of Expertise' },
+    camera: { eye: { x: 1.5, y: 1.5, z: 1.5 } }
+  },
+  margin: { l: 0, r: 0, t: 40, b: 0 },
+  showlegend: false,
+  paper_bgcolor: '#f7f7f7'
+};
+
+const config = {
+  responsive: true,
+  scrollZoom: true
+};
+
+// --------------------------------------
+// 5. Filter & Re-render the Plot
+// --------------------------------------
+function updatePlot() {
+  const selectedGroup = groupFilterSelect.value;
+  const searchTerm = searchSkillInput.value.toLowerCase();
+
+  filteredData = allSkills.filter(d => {
+    // Group filter
+    if (selectedGroup !== "All" && d.Group !== selectedGroup) return false;
+    // Text search filter
+    if (searchTerm && !d.Skill.toLowerCase().includes(searchTerm)) return false;
+    return true;
+  });
+
+  currentTrace = makeTrace(filteredData);
+
+  Plotly.newPlot('plot', [currentTrace], layout, config)
+    .then(() => {
+      applyColorBy();
+    });
+}
+
+// --------------------------------------
+// 6. Coloring Logic (Group vs Size)
+// --------------------------------------
+function applyColorBy() {
+  if (!currentTrace) return;
+
+  if (colorBySelect.value === "Size") {
+    // Color by size (using a hue gradient)
+    const newColors = currentTrace.marker.size.map(size => {
+      const hue = Math.floor((size / 15) * 240); 
+      return `hsl(${hue}, 70%, 50%)`;
+    });
+    Plotly.restyle('plot', { 'marker.color': [newColors] });
+  } else {
+    // Color by group
+    const newColors = filteredData.map(skill => colorByGroup(skill.ColorCode));
+    Plotly.restyle('plot', { 'marker.color': [newColors] });
+  }
+}
+
+// --------------------------------------
+// 7. Event Handlers & Reset
+// --------------------------------------
+colorBySelect.addEventListener('change', applyColorBy);
+groupFilterSelect.addEventListener('change', updatePlot);
+searchSkillInput.addEventListener('keyup', updatePlot);
+
+resetBtn.addEventListener('click', () => {
+  groupFilterSelect.value = "All";
+  searchSkillInput.value = "";
+  colorBySelect.value = "Group";
+  updatePlot();
+});
+
+// --------------------------------------
+// 8. On Page Load: Render the Plot
+// --------------------------------------
+updatePlot();
+</script>
+</body>
+</html>
