@@ -5,18 +5,21 @@ An interactive 3D visualization tool for exploring and analyzing professional sk
 ## Features
 
 ### Core Visualization
+
 - 3D interactive plot showing skills as nodes in a galaxy
 - Skills are organized by proficiency, importance, and depth of expertise
 - Dynamic color coding by group or skill size
 - Customizable label sizes and animation speeds
 
 ### Interactive Controls
+
 - Filter skills by group or search term
 - Multiple view presets (Default, Top, Side, Cluster)
 - Adjustable animation speed and label size
 - Reset functionality to restore default settings
 
 ### Skill Details Panel
+
 - Detailed metrics for each skill:
   - Proficiency percentage
   - Importance rating
@@ -26,6 +29,7 @@ An interactive 3D visualization tool for exploring and analyzing professional sk
 - Skill progression indicator
 
 ### Relationship Visualization
+
 - Dynamic connection lines between related skills
 - Three types of relationships:
   - Related skills (same group)
@@ -36,15 +40,18 @@ An interactive 3D visualization tool for exploring and analyzing professional sk
 ## Technical Details
 
 ### Dependencies
+
 - Plotly.js for 3D visualization
 - Pure JavaScript for interactivity
 - HTML5 Canvas for relationship rendering
 
 ### Browser Support
+
 - Modern browsers (Chrome, Firefox, Safari, Edge)
 - Responsive design for desktop and mobile devices
 
 ### Performance Optimizations
+
 - Efficient data filtering and rendering
 - Smooth animations with configurable duration
 - Pre-render placeholder for better user experience
@@ -74,4 +81,15 @@ An interactive 3D visualization tool for exploring and analyzing professional sk
 ## Implementation Notes
 
 ### Data Structure
+
 Skills are represented with the following properties:
+
+- **Skill**: Full name of the skill (e.g., "Machine Learning", "Python")
+- **Group**: Category the skill belongs to (e.g., "AI", "Programming")
+- **Label**: Short display name for visualization (e.g., "ML", "Python")
+- **X**: X-coordinate position in the visualization (0.0-1.0)
+- **Y**: Y-coordinate position in the visualization (0.0-1.0)
+- **Size**: Relative size of the skill node (1-15)
+- **ColorCode**: Color grouping for the skill (matches Group)
+
+The data is stored in CSV format with the following schema:
